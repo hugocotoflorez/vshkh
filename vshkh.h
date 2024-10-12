@@ -1,6 +1,24 @@
 #ifndef VSHKH_H
 #define VSHKH_H
 
+/***************************************************
+ * VSHKH                                           *
+ ***************************************************
+ * Author: Hugo Coto Florez                        *
+ *                                                 *
+ * Wellcome to Very Simple Hugo's Keyboard Handler *
+ * The aim of this proyect is to give an easy to   *
+ * use keyboard handler. This proyect is part of   *
+ * nhoutpad2.                                      *
+ *                                                 *
+ * Contact info: hugo.coto@rai.usc.es              *
+ * -> github.com/hugocotoflorez(/vshkh)            *
+ ***************************************************/
+
+
+/***************************************************
+ * ---| MISC                                  |--- *
+ ***************************************************/
 
 /* User dont have to handle this struct manually,
  * but due to Author's metodology it is shared
@@ -27,12 +45,12 @@ typedef struct
     Mods mods;
 } Keypress;
 
-#define INVALID_KEYPRESS \
+#define INVALID_KP \
     (Keypress) { .c = '\0', .mods = IS_INVALID, }
 
-/*****************************/
-/* ---| VSHHK interface |--- */
-/*****************************/
+/***************************************************
+ * ---| VSHHK interface (keyboard.c)          |--- *
+ ***************************************************/
 
 /* The keyboard handler would be initialized in
  * a different thread, so this funcion returns
@@ -51,7 +69,7 @@ int kh_end();
 /* Get a keypress that is waiting in buffer and
  * remove it from buffer. If no keypress is in
  * buffer it return a keypress that return 0
- * if passed to kh_is_valid. */
+ * if passed to kh_valid_kp. */
 Keypress kh_get();
 
 /* Wait for keyboard input and return the first
@@ -64,9 +82,9 @@ Keypress kh_wait();
 Keypress kh_flush();
 
 
-/*****************************/
-/* ---| Misc tools      |--- */
-/*****************************/
+/***************************************************
+ * ---| Utils (utils.c)                       |--- *
+ ***************************************************/
 
 typedef enum
 {
@@ -89,11 +107,74 @@ Arrowkey kh_is_arrow(Keypress);
 int kh_has_ctrl(Keypress);
 int kh_has_shift(Keypress);
 int kh_has_alt(Keypress);
-int kh_is_valid(Keypress);
+int kh_valid_kp(Keypress);
 
-/*****************************/
-/* ---| Buffer          |--- */
-/*****************************/
+
+/***************************************************
+ * ---| Keybinds (keybinds.c)                 |--- *
+ ***************************************************/
+
+/* The keyboard handler can also execute a
+ * void(*foo)(void) function if set to a key
+ * or sequence of keys. Funtions below are
+ * used to set or delete keybinds. */
+
+/* Function prototype */
+typedef void (*bindFunc)(void);
+
+/* Max number of keypresses that can be stored
+ * in a single keybind */
+#define KEYBINDLEN 2
+
+/* A keybind is a sequence of keypresses.
+ * The keypresses should be at least 1, and
+ * less or equal than KEYBINDLEN. KP is an
+ * array of keypresses, NULL terminated. */
+typedef struct
+{
+    Keypress kp[KEYBINDLEN + 1]; // all keypresses have to be valid
+    bindFunc func;               // function that is going to be executed
+} Keybind;
+
+#define INVALID_KB \
+    (keybind) { 0 }
+
+/* return >0 if keybind is valid or 0 otherwise */
+int kh_valid_kb(Keybind);
+
+/* Add a keybind. If same sequences of keypresses are
+ * yet stored, it only modified func. Note
+ * that previous one would be overwritten. */
+void kh_bind_add(Keybind);
+
+/* Remove a keybind if exists */
+void kh_bind_remove(Keybind);
+
+/* Return a Keybind with the same sequence at
+ * str, being str a correct formatted textual
+ * keybind. If some error happened return an
+ * invalid Keybind. It can be tested using
+ * kh_valid_kb(Keybind).
+ * See STR Keybind format before. */
+Keybind kh_bind_parse(const char *str);
+
+/******************************************************
+ * ---| STR Keybind format                       |--- *
+ ******************************************************/
+
+/* the max keypresses are stored in KEYBINDLEN
+ * Modifiers:
+ *  - Ctrl: represented as ^. Example: ctrl+a -> ^a
+ *  - Shift: just use an Upercase character
+ * Characters: alphas from a-z
+ *
+ * Symbols and numbers are not valid chars */
+
+
+/***************************************************
+ * ---| Buffer (buffer.c)                     |--- *
+ ***************************************************/
+
 /* As mentioned above, I share this info to allow
  * user modify and customize the behaviour of the
  * handler.
