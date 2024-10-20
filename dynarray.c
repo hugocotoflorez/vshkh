@@ -10,13 +10,15 @@ extern Array kb_array;
 #define BUFINC 4;
 
 /* Get the adress of the first occurence of kb or NULL */
-Keybind              *__array_get(Keybind kb);
+Keybind *__array_get(Keybind kb);
 /* Get the adress of the first occurence of INVALID_KB or NULL */
-static Keybind       *__get_invalid();
+static Keybind *__get_invalid();
 /* Get the first empty adress or used by an invalid kb */
-static Keybind       *__get_empty();
+static Keybind *__get_empty();
 /* Grow the array */
-static void           __grow();
+static void __grow();
+/* Pop the element at index I. Index I have to be valid.*/
+static Keybind __pop(int i);
 /* Insert an element, dont change any variable or check anything */
 static inline Keybind __insert(Keybind *kbptr, Keybind kb);
 
@@ -38,6 +40,15 @@ __grow()
     kb_array.data = realloc(kb_array.data, kb_array.alloc_size);
 }
 
+static Keybind
+__pop(int i)
+{
+    /* Just mark element as invalid, dont move elements */
+    Keybind ret      = kb_array.data[i];
+    kb_array.data[i] = INVALID_KB;
+    return ret;
+}
+
 static Keybind *
 __get_invalid()
 {
@@ -55,25 +66,6 @@ __get_empty()
         /* Return the last empty position and increment length */
         return kb_array.data + kb_array.length++ - 1;
     return NULL;
-}
-
-/* Check if keypresses of both keybinds are the same,
- * return 0 is they are not equal, != 0 otherwise */
-int
-kb_is_equal(Keybind kb1, Keybind kb2)
-{
-    Keypress *kb1kp = kb1.kp;
-    Keypress *kb2kp = kb2.kp;
-
-    while (kb1kp && kb1kp)
-    {
-        if (!kp_is_equal(*kb1kp, *kb2kp))
-            return 0;
-        ++kb1kp;
-        ++kb2kp;
-    }
-
-    return kb1kp == kb2kp;
 }
 
 /* Get the first adress of kp if it is in the array */
@@ -104,6 +96,7 @@ Keybind
 array_add(Keybind kb)
 {
     Keybind *cell = __get_empty();
+
     if (cell)
         return __insert(cell, kb);
 
@@ -112,16 +105,28 @@ array_add(Keybind kb)
     return array_add(kb);
 }
 
-/* Remove an keybind from the array
+/* Remove a keybind KB from the array
  * and return it */
 Keybind
-array_pop(Keybind)
+array_pop(Keybind kb)
 {
+    __pop(kb_array.data - __array_get(kb));
+    return INVALID_KB;
 }
 
-/* Get the function if keyfind is found or NULL.*/
-BindFunc array_find(Keybind);
+/* Get the function if keybind is found or NULL.*/
+BindFunc
+array_exec(Keybind kb)
+{
+    return __array_get(kb)->func;
+}
 
 /* Destroy the buffer, all data
  * in the buffer are lost */
-void array_destroy();
+void
+array_destroy()
+{
+    free(kb_array.data);
+    // set all fields as usnet
+    kb_array = (Array) { 0 };
+}

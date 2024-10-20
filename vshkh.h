@@ -15,6 +15,154 @@
  * -> github.com/hugocotoflorez(/vshkh)            *
  ***************************************************/
 
+/* Ascii representable form of all 7-bit value */
+static const char *REPR[] = {
+    "NUL", "SOH", "STX", "ETX", "EOT", "ENQ", "ACK", "BEL", "BS",  "HT",
+    "LF",  "VT",  "FF",  "CR",  "SO",  "SI",  "DLE", "DC1", "DC2", "DC3",
+    "DC4", "NAK", "SYN", "ETB", "CAN", "EM",  "SUB", "ESC", "FS",  "GS",
+    "RS",  "US",  "SP",  "!",   "\"",  "#",   "$",   "%",   "&",   "'",
+    "(",   ")",   "*",   "+",   ",",   "-",   ".",   "/",   "0",   "1",
+    "2",   "3",   "4",   "5",   "6",   "7",   "8",   "9",   ":",   ";",
+    "<",   "=",   ">",   "?",   "@",   "A",   "B",   "C",   "D",   "E",
+    "F",   "G",   "H",   "I",   "J",   "K",   "L",   "M",   "N",   "O",
+    "P",   "Q",   "R",   "S",   "T",   "U",   "V",   "W",   "X",   "Y",
+    "Z",   "[",   "\\",  "]",   "^",   "_",   "`",   "a",   "b",   "c",
+    "d",   "e",   "f",   "g",   "h",   "i",   "j",   "k",   "l",   "m",
+    "n",   "o",   "p",   "q",   "r",   "s",   "t",   "u",   "v",   "w",
+    "x",   "y",   "z",   "{",   "|",   "}",   "~",   "DEL",
+};
+
+/* Ascii description of all 7-bit value */
+static const char *DESC[] = {
+    "Null character",
+    "Start of Heading",
+    "Start of Text",
+    "End of Text",
+    "End of Transmission",
+    "Enquiry",
+    "Acknowledge",
+    "Bell, Alert",
+    "Backspace",
+    "Horizontal Tab",
+    "Line Feed",
+    "Vertical Tabulation",
+    "Form Feed",
+    "Carriage Return",
+    "Shift Out",
+    "Shift In",
+    "Data Link Escape",
+    "Device Control One (XON)",
+    "Device Control Two",
+    "Device Control Three (XOFF)",
+    "Device Control Four",
+    "Negative Acknowledge",
+    "Synchronous Idle",
+    "End of Transmission Block",
+    "Cancel",
+    "End of medium",
+    "Substitute",
+    "Escape",
+    "File Separator",
+    "Group Separator",
+    "Record Separator",
+    "Unit Separator",
+    "Space",
+    "Exclamation mark",
+    "Double quotes (or speech marks)",
+    "Number sign",
+    "Dollar",
+    "Per cent sign",
+    "Ampersand",
+    "Single quote",
+    "Open parenthesis (or open bracket)",
+    "Close parenthesis (or close bracket)",
+    "Asterisk",
+    "Plus",
+    "Comma",
+    "Hyphen-minus",
+    "Period, dot or full stop",
+    "Slash or divide",
+    "Zero",
+    "One",
+    "Two",
+    "Three",
+    "Four",
+    "Five",
+    "Six",
+    "Seven",
+    "Eight",
+    "Nine",
+    "Colon",
+    "Semicolon",
+    "Less than (or open angled bracket)",
+    "Equals",
+    "Greater than (or close angled bracket)",
+    "Question mark",
+    "At sign",
+    "Uppercase A",
+    "Uppercase B",
+    "Uppercase C",
+    "Uppercase D",
+    "Uppercase E",
+    "Uppercase F",
+    "Uppercase G",
+    "Uppercase H",
+    "Uppercase I",
+    "Uppercase J",
+    "Uppercase K",
+    "Uppercase L",
+    "Uppercase M",
+    "Uppercase N",
+    "Uppercase O",
+    "Uppercase P",
+    "Uppercase Q",
+    "Uppercase R",
+    "Uppercase S",
+    "Uppercase T",
+    "Uppercase U",
+    "Uppercase V",
+    "Uppercase W",
+    "Uppercase X",
+    "Uppercase Y",
+    "Uppercase Z",
+    "Opening bracket",
+    "Backslash",
+    "Closing bracket",
+    "Caret - circumflex",
+    "Underscore",
+    "Grave accent",
+    "Lowercase a",
+    "Lowercase b",
+    "Lowercase c",
+    "Lowercase d",
+    "Lowercase e",
+    "Lowercase f",
+    "Lowercase g",
+    "Lowercase h",
+    "Lowercase i",
+    "Lowercase j",
+    "Lowercase k",
+    "Lowercase l",
+    "Lowercase m",
+    "Lowercase n",
+    "Lowercase o",
+    "Lowercase p",
+    "Lowercase q",
+    "Lowercase r",
+    "Lowercase s",
+    "Lowercase t",
+    "Lowercase u",
+    "Lowercase v",
+    "Lowercase w",
+    "Lowercase x",
+    "Lowercase y",
+    "Lowercase z",
+    "Opening brace",
+    "Vertical bar",
+    "Closing brace",
+    "Equivalency sign - tilde",
+    "Delete",
+};
 
 /***************************************************
  * ---| MISC                                  |--- *
@@ -26,12 +174,12 @@
  * See kh_has_ctrl and related. */
 typedef enum
 {
-    NO_MOD = 0,
-    CTRL_MOD,
-    SHIFT_MOD,
-    ALT_MOD,
-    IS_ARROW,
-    IS_INVALID,
+    NO_MOD     = 1 << 0,
+    CTRL_MOD   = 1 << 1,
+    SHIFT_MOD  = 1 << 2,
+    ALT_MOD    = 1 << 3,
+    IS_ARROW   = 1 << 4,
+    IS_INVALID = 1 << 5,
 } Mods;
 
 /* Keypress return a character with the mods used.
@@ -210,8 +358,9 @@ Keybind array_add(Keybind kb);
  * and return it */
 Keybind array_pop(Keybind);
 
-/* Get the function if keyfind is found or NULL.*/
-BindFunc array_find(Keybind);
+/* Get the function if keyfind is found or NULL.
+ * It is posible to call it as array_exec(kb)(); */
+BindFunc array_exec(Keybind);
 
 /* Destroy the buffer, all data
  * in the buffer are lost */
@@ -271,6 +420,5 @@ Keypress buffer_top();
 /* Destroy the buffer, all data
  * in the buffer are lost */
 void buffer_destroy();
-
 
 #endif
