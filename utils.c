@@ -1,4 +1,5 @@
 #include "vshkh.h"
+#include <stdio.h>
 
 /* Return one of the values above.
  * Arrowkey can be used as a boolean
@@ -43,7 +44,6 @@ kh_has_alt(Keypress kp)
     return kp.mods & ALT_MOD;
 }
 
-
 inline int
 kp_is_equal(Keypress kp1, Keypress kp2)
 {
@@ -55,22 +55,24 @@ kp_is_equal(Keypress kp1, Keypress kp2)
 int
 kb_is_equal(Keybind kb1, Keybind kb2)
 {
-    Keypress *kb1kp = kb1.kp;
-    Keypress *kb2kp = kb2.kp;
-
-    while (kb1kp && kb1kp)
+    for (int i = 0; i < KEYBINDLEN; i++)
     {
-        if (!kp_is_equal(*kb1kp, *kb2kp))
+        if (!kp_is_equal(kb1.kp[i], kb2.kp[i]))
             return 0;
-        ++kb1kp;
-        ++kb2kp;
     }
-
-    return kb1kp == kb2kp;
+    return 1;
 }
 
-int
+/* return >0 if keybind is valid or 0 otherwise */
+inline int
 kh_valid_kp(Keypress kp)
 {
     return !kp_is_equal(kp, INVALID_KP);
+}
+
+/* return >0 if keybind is valid or 0 otherwise */
+inline int
+kh_valid_kb(Keybind kb)
+{
+    return !kb_is_equal(kb, INVALID_KB);
 }

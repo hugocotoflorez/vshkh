@@ -1,6 +1,3 @@
-#ifndef VSHKH_H
-#define VSHKH_H
-
 /***************************************************
  * VSHKH                                           *
  ***************************************************
@@ -14,6 +11,33 @@
  * Contact info: hugo.coto@rai.usc.es              *
  * -> github.com/hugocotoflorez(/vshkh)            *
  ***************************************************/
+
+/*********************************************************
+ * Function Apendix                                      *
+ *********************************************************
+ * Arrowkey kh_is_arrow(Keypress);                       *
+ * Keybind  kh_bind_parse(const char *str);              *
+ * Keybind  kh_bind_append(Keybind *kb, Keypress kp);    *
+ * void     kh_bind_set_func(Keybind kb, BindFunc func); *
+ * Keybind  kh_bind_new();                               *
+ * BindFunc kh_bind_get(Keybind kb);                     *
+ * void     kh_bind_remove(Keybind);                     *
+ * void     kh_bind_add(Keybind);                        *
+ * int      kh_valid_kb(Keybind);                        *
+ * Keypress kh_flush();                                  *
+ * Keypress kh_wait();                                   *
+ * Keypress kh_get();                                    *
+ * void     kh_end();                                    *
+ * void     kh_pause();                                  *
+ * void     kh_start();                                  *
+ * int      kh_has_ctrl(Keypress);                       *
+ * int      kh_has_shift(Keypress);                      *
+ * int      kh_has_alt(Keypress);                        *
+ * int      kh_valid_kp(Keypress);                       *
+ *********************************************************/
+
+#if defined(ASCII_TABLE_REPR) && !defined(ASCII_TABLE_REPR_DEFINED)
+#define ASCII_TABLE_REPR_DEFINED
 
 /* Ascii representable form of all 7-bit value */
 static const char *REPR[] = {
@@ -31,6 +55,10 @@ static const char *REPR[] = {
     "n",   "o",   "p",   "q",   "r",   "s",   "t",   "u",   "v",   "w",
     "x",   "y",   "z",   "{",   "|",   "}",   "~",   "DEL",
 };
+#endif
+
+#if defined(ASCII_TABLE_DESC) && !defined(ASCII_TABLE_DESC_DEFINED)
+#define ASCII_TABLE_DESC_DEFINED
 
 /* Ascii description of all 7-bit value */
 static const char *DESC[] = {
@@ -163,6 +191,10 @@ static const char *DESC[] = {
     "Equivalency sign - tilde",
     "Delete",
 };
+#endif
+
+#ifndef VSHKH_H
+#define VSHKH_H
 
 /***************************************************
  * ---| MISC                                  |--- *
@@ -174,7 +206,7 @@ static const char *DESC[] = {
  * See kh_has_ctrl and related. */
 typedef enum
 {
-    NO_MOD     = 1 << 0,
+    NO_MOD     = 0,
     CTRL_MOD   = 1 << 1,
     SHIFT_MOD  = 1 << 2,
     ALT_MOD    = 1 << 3,
@@ -194,7 +226,7 @@ typedef struct
 } Keypress;
 
 #define INVALID_KP \
-    (Keypress) { .c = '\0', .mods = IS_INVALID, }
+    (Keypress) { .c = 0, .mods = IS_INVALID, }
 
 /***************************************************
  * ---| VSHHK interface (keyboard.c)          |--- *
@@ -202,17 +234,17 @@ typedef struct
 
 /* The keyboard handler would be initialized in
  * a different thread, so this funcion returns
- * once it is created. The return value is the
- * thread id. */
-int kh_start();
+ * once it is created. This function also wake up
+ * the handler if paused. */
+void kh_start();
 
 /* Pause the handler, the input would be read
  * once it starts again */
-int kh_pause();
+void kh_pause();
 
 /* Close the handler and restore all values
  * to default */
-int kh_end();
+void kh_end();
 
 /* Get a keypress that is waiting in buffer and
  * remove it from buffer. If no keypress is in
@@ -268,6 +300,22 @@ void kh_bind_add(Keybind);
 
 /* Remove a keybind if exists */
 void kh_bind_remove(Keybind);
+
+/* Get the function from keybind that share KB
+ * keypresses or NULL if not found */
+BindFunc kh_bind_get(Keybind kb);
+
+/* Initialize an empty keybind */
+Keybind kh_bind_new();
+
+/* Set the func to a keybind. This call dont
+ * modify yet stored keybinds, so it is needed
+ * to be called BEFORE add */
+void kh_bind_set_func(Keybind *kb, BindFunc func);
+
+/* Append a keypress to the keybind */
+Keybind kh_bind_append(Keybind *kb, Keypress kp);
+
 
 /* Return a Keybind with the same sequence at
  * str, being str a correct formatted textual
@@ -329,6 +377,9 @@ int kp_is_equal(Keypress, Keypress);
  * can be both valid or invalid keybinds. Invalid keybinds
  * could be overwritten. If array is full, it would increment
  * by ARRINC. */
+
+/* Current implementation is thread-safe */
+
 typedef struct
 {
     int length;     /* Number of elements in buffer. */
@@ -340,7 +391,7 @@ typedef struct
 
 /* Array grow as
  * new size = old size + ARRINC */
-#define ARRINC 4
+#define BUFINC 4
 
 /* As this array is not going to be used more than
  * once, Im going to use kp_array as the
@@ -361,6 +412,12 @@ Keybind array_pop(Keybind);
 /* Get the function if keyfind is found or NULL.
  * It is posible to call it as array_exec(kb)(); */
 BindFunc array_exec(Keybind);
+
+/* Return 0 if keybind is not in array, otherwise true value */
+int array_exist(Keybind kb);
+
+/* Modify keybind data with the new Keybind values */
+void array_modify(Keybind kb);
 
 /* Destroy the buffer, all data
  * in the buffer are lost */
@@ -384,27 +441,31 @@ void array_destroy();
  * As this implementation is done to store keypresses
  * the types and other stuff are based on author
  * knowledge about future usage. */
+
+/* Current implementation is thread-safe */
+
 typedef struct
 {
-    int length;           /* Number of elements in buffer. */
-    int alloc_size;       /* Size of data, max number of elements
-                           * that can be stored in data without
-                           * overflow */
-    Keypress *data;       /* Elements in the buffer */
-    Keypress *next_ptr;   /* Pointer to next element that have
-                           * to be processed */
-    Keypress *insert_ptr; /* Pointer to the next position
-                           * where a new element have to
-                           * be stored */
+    int       length;  /* Number of elements in buffer. */
+    Keypress *data;    /* Elements in the buffer */
+    Keypress *out_ptr; /* Pointer to next element that have
+                        * to be processed */
+    Keypress *in_ptr;  /* Pointer to the next position
+                        * where a new element have to
+                        * be stored */
 } Buffer;
 
 /* As this buffer is not going to be used more than
  * once Im going to use kp_buffer as the
  * buffer on which every function call applied. */
-static Buffer kp_buffer;
+extern Buffer kp_buf;
+
+/* If this is defined it grow the buffer if new element cant
+ * be added. Otherwise a error would be returned */
+#define FIX_OVERFLOW 1
 
 /* Initialize the buffer */
-void buffer_new();
+void buffer_new(int);
 
 /* Add a keypress to the buffer and
  * return added keypress. */
@@ -416,6 +477,10 @@ Keypress buffer_pop();
 
 /* Get the top of the buffer */
 Keypress buffer_top();
+
+/* Change buffer size. SIZE must be bigger than
+ * previous size. */
+int buffer_chsize(int);
 
 /* Destroy the buffer, all data
  * in the buffer are lost */
