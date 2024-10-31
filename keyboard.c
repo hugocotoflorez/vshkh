@@ -1,6 +1,9 @@
 #include "vshkh.h"
+#include <fcntl.h>
 #include <pthread.h>
-#include <stdio.h> // debug
+#include <sched.h>
+#include <signal.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <termios.h>
 #include <unistd.h>
@@ -11,43 +14,171 @@ static int       QUIT    = 0;
 static pthread_t main_thread;
 
 /* Sleep time if nothing read */
-#define STIME 100
+#define STIME 10000
 /* Sleep time if disabled */
-#define STDIS 100
+#define STDIS 10000
+/* sleep time while waiting in kh_wait */
+#define TWAIT 10000
 
-static struct termios origin_termios[2];
+static struct termios origin_termios;
+static int            flags;
 
 static void
 __enable_raw_mode()
 {
     struct termios raw_opts;
-    tcgetattr(STDIN_FILENO, origin_termios);
-    raw_opts = *origin_termios;
+    printf("Enable raw mode\n");
+    tcgetattr(STDIN_FILENO, &origin_termios);
+    raw_opts = origin_termios;
     cfmakeraw(&raw_opts);
     raw_opts.c_oflag |= (OPOST | ONLCR); // Activa la conversión de '\n' en '\r\n'
+
+    // raw_opts.c_lflag &= ~ICANON;         // to set the timeout
+    // raw_opts.c_cc[VTIME] = 1;            // timeout of 0,1s
+    // raw_opts.c_cc[VMIN]  = 0;
     tcsetattr(STDIN_FILENO, TCSANOW, &raw_opts);
+    flags = fcntl(STDIN_FILENO, F_GETFL, 0);
+    fcntl(STDIN_FILENO, F_SETFL, flags | O_NONBLOCK);
 }
 
 static void
 __disable_raw_mode()
 {
-    tcsetattr(STDIN_FILENO, 0, &origin_termios[1]);
+    printf("Disable raw mode\n");
+    tcsetattr(STDIN_FILENO, TCSANOW, &origin_termios);
+    fcntl(STDIN_FILENO, F_SETFL, flags);
+    system("reset"); // force the terminal to reset
+}
+
+void
+__kp_action(Keypress kp)
+{
+    Keybind  kb;
+    BindFunc func;
+
+    kb = kh_bind_new();
+    kh_bind_append(&kb, kp);
+    func = kh_bind_get(kb);
+    if (func)
+        func();
+    else
+        buffer_add(kp);
+}
+
+
+Keypress
+__single_key_analize(char c)
+{
+    Keypress kp;
+
+    switch (c)
+    {
+        case 0x0 ... 0x1F:
+            kp.mods = CTRL_MOD | SHIFT_MOD;
+            kp.c    = c + '@';
+            break;
+
+        case 'A' ... 'Z':
+            kp.mods = SHIFT_MOD;
+            kp.c    = c;
+            break;
+
+        default:
+            kp.mods = NO_MOD;
+            kp.c    = c;
+            break;
+    }
+    return kp;
+}
+
+
+void
+__analize(char c)
+{
+    /* De momento solo funciona para
+     * keybinds de un solo caracter,
+     * control y shift incluidos. */
+    Keypress kp = __single_key_analize(c);
+
+    __kp_action(kp);
+}
+
+void
+__esc_special(char *buf)
+{
+    ssize_t  n;
+    Keypress kp;
+
+    switch (n = read(STDIN_FILENO, buf + 1, 2))
+    {
+        case 2:
+            if (buf[1] != '[')
+                goto __normal__; // just to avoid nesting
+
+            switch (buf[2])
+            {
+                case 'A':
+                    __kp_action((Keypress) {
+                    .c    = ARROW_UP,
+                    .mods = IS_ARROW,
+                    });
+                    return;
+
+                case 'B':
+                    __kp_action((Keypress) {
+                    .c    = ARROW_DOWN,
+                    .mods = IS_ARROW,
+                    });
+                    return;
+
+                case 'C':
+                    __kp_action((Keypress) {
+                    .c    = ARROW_RIGHT,
+                    .mods = IS_ARROW,
+                    });
+                    return;
+
+                case 'D':
+                    __kp_action((Keypress) {
+                    .c    = ARROW_LEFT,
+                    .mods = IS_ARROW,
+                    });
+                    return;
+            }
+        __normal__:
+            __analize(buf[0]);
+            __analize(buf[1]);
+            __analize(buf[2]);
+
+        case 1:
+            // Alt mod
+            /* Analize single key for allow alt+ctrl */
+            kp = __single_key_analize(buf[1]);
+            kp.mods |= ALT_MOD;
+            __kp_action(kp);
+            return;
+
+        case 0:
+        case -1: // eof -> no input
+            __analize(buf[0]);
+
+        default:
+            break;
+    }
 }
 
 static void *
 __keyboard_handler(void *args)
 {
-    ssize_t  n;
-    char     buf[1];
-    Keypress kp;
-    BindFunc func;
+    ssize_t n;
+    char    buf[3];
 
     __enable_raw_mode();
 
     while (!QUIT)
     {
         if (ENABLED)
-            switch (n = read(STDIN_FILENO, buf, sizeof(buf)))
+            switch (n = read(STDIN_FILENO, buf, 1))
             {
                 case -1:
                 case 0:
@@ -55,35 +186,11 @@ __keyboard_handler(void *args)
                     break;
 
                 default:
-                    switch (*buf)
-                    {
-                        case 0x0 ... 0x1F:
-                            kp.mods = CTRL_MOD | SHIFT_MOD;
-                            kp.c    = *buf + '@';
-                            break;
+                    if (*buf == 0x1b) // esc
+                        __esc_special(buf);
 
-                        case 'A' ... 'Z':
-                            kp.mods = SHIFT_MOD;
-                            kp.c    = *buf;
-                            break;
-
-                        default:
-                            kp.mods = NO_MOD;
-                            kp.c    = *buf;
-                            break;
-                    }
-
-                    /* De momento solo funciona para
-                     * keybinds de un solo caracter,
-                     * control y shift incluidos. */
-                    Keybind kb;
-                    kb = kh_bind_new();
-                    kh_bind_append(&kb, kp);
-                    func = kh_bind_get(kb);
-                    if (func)
-                        func();
                     else
-                        buffer_add(kp);
+                        __analize(*buf);
             }
         else
             usleep(STDIS);
@@ -92,6 +199,13 @@ __keyboard_handler(void *args)
     __disable_raw_mode();
 
     return NULL;
+}
+
+static void
+die()
+{
+    QUIT = 1;
+    __disable_raw_mode();
 }
 
 static __attribute__((constructor)) void
@@ -142,13 +256,21 @@ kh_pause()
 void
 kh_end()
 {
-    QUIT = 1;
+    die();
     pthread_join(main_thread, NULL);
 }
 
 /* Wait for keyboard input and return the first
  * keypress */
-Keypress kh_wait();
+Keypress
+kh_wait()
+{
+    Keypress kp;
+
+    while (!kh_valid_kp(kp = kh_get()))
+        usleep(TWAIT);
+    return kp;
+}
 
 /* Ignore buffered keypresses and empty the
  * buffer. Removed keypressed cant be accesed

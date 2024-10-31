@@ -1,9 +1,13 @@
+#define ASCII_TABLE_REPR
+#define ASCII_TABLE_DESC
 #include "vshkh.h"
 #include <signal.h>
 #include <stdio.h>
 #include <sys/types.h>
 #include <termios.h>
 #include <unistd.h>
+
+/* This program is here for legacity */
 
 static struct termios origin_termios[2];
 
@@ -49,7 +53,7 @@ main(int argc, char *argv[])
                 usleep(100);
                 break;
             default:
-                printf("[%-3s] Hx: %-3d (%s)\n", REPR[c], c, DESC[c]);
+                printf("[%-3s] Hx: %#-3x (%s)\n", REPR[c], c, DESC[c]);
                 break;
         }
     }

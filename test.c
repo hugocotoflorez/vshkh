@@ -1,14 +1,16 @@
+#include <pthread.h>
 #define ASCII_TABLE_REPR
 #include "vshkh.h"
 #include <assert.h>
-#include <signal.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <unistd.h>
 
 void
 die()
 {
-    kill(getpid(), SIGTERM);
+    kh_end();
+    exit(0);
 }
 
 void
@@ -17,42 +19,67 @@ hello()
     printf("Hello\n");
 }
 
+void
+pause_wrap()
+{
+    kh_pause();
+    sleep(2);
+    kh_start();
+}
+
+void
+clear()
+{
+    printf("\033[H\033[2J");
+    fflush(stdout);
+}
+
 int
 main(void)
 {
     Keypress kp;
     kh_start();
 
-    Keybind kb = kh_bind_parse("^C");
-    kh_bind_set_func(&kb, NULL);
-    kh_bind_add(kb);
-
-    Keybind kb2 = kh_bind_parse("^C");
-    kh_bind_set_func(&kb2, die);
-    kh_bind_add(kb2);
-
-    Keybind kb3 = kh_bind_parse("C");
-    kh_bind_set_func(&kb3, hello);
-    kh_bind_add(kb3);
-
-    assert(kb_is_equal(kb, kb2));
-    assert(!kb_is_equal(kb, kb3));
-
+    kh_bind_create("^C", die);   // assign die to ctrl+c
+    kh_bind_create("^L", clear); // assign die to ctrl+c
+    /*
+        kh_bind_create("0", hello);
+        kh_bind_create("*", hello);
+        kh_bind_create("h", die);
+        kh_bind_create("h", hello); // change function binded to h
+     */
 
     while (1)
     {
-        kp = kh_get();
-        if (kh_valid_kp(kp))
-        {
-            printf("[%-3s]", REPR[(int) kp.c]);
-            if (kh_has_ctrl(kp))
-                printf(" + CTRL");
-            if (kh_has_shift(kp))
-                printf(" + SHIFT");
-            putchar('\n');
-        }
+        kp = kh_wait();
+
+        if (kh_has_ctrl(kp))
+            printf("^");
+
+        if (kh_has_alt(kp))
+            printf("&");
+
+        if (kh_is_arrow(kp))
+            switch (kp.c)
+            {
+                case ARROW_UP:
+                    printf("arrow up");
+                    break;
+                case ARROW_DOWN:
+                    printf("arrow down");
+                    break;
+                case ARROW_LEFT:
+                    printf("arrow left");
+                    break;
+                case ARROW_RIGHT:
+                    printf("arrow right");
+                    break;
+            }
+
         else
-            usleep(100);
+            printf("%s", REPR[(int) kp.c]);
+
+        putchar('\n');
     }
     return 0;
 }

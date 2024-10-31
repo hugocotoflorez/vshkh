@@ -2,8 +2,8 @@
 #include <assert.h>
 #include <pthread.h>
 #include <stddef.h>
-#include <stdlib.h>
 #include <stdio.h>
+#include <stdlib.h>
 
 Array                  kb_array;
 static pthread_mutex_t mutex;
@@ -49,7 +49,7 @@ static void
 __grow()
 {
     kb_array.alloc_size += BUFINC;
-    kb_array.data = realloc(kb_array.data, kb_array.alloc_size*sizeof(Keybind));
+    kb_array.data = realloc(kb_array.data, kb_array.alloc_size * sizeof(Keybind));
     assert(kb_array.data);
 }
 

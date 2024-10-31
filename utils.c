@@ -1,5 +1,4 @@
 #include "vshkh.h"
-#include <stdio.h>
 
 /* Return one of the values above.
  * Arrowkey can be used as a boolean
@@ -8,19 +7,10 @@
 Arrowkey
 kh_is_arrow(Keypress kp)
 {
-    // it only control have to be set
-    if (kp.mods != CTRL_MOD)
+    if (kp.mods != IS_ARROW)
         return NO_ARROW;
 
-    switch (kp.c)
-    {
-        case 'A':
-        case 'B':
-        case 'C':
-        case 'D':
-        default:
-            return NO_ARROW;
-    }
+    return kp.c;
 }
 
 /* Following functions return >0 if keypress has

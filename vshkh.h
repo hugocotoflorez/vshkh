@@ -331,12 +331,23 @@ Keybind kh_bind_parse(const char *str);
 
 /* the max keypresses are stored in KEYBINDLEN
  * Modifiers:
- *  - Ctrl: represented as ^. Example: ctrl+a -> ^a
- *  - Shift: just use an Upercase character
- * Characters: alphas from a-z
- *
- * Symbols and numbers are not valid chars */
+ *  - Ctrl: represented as ^. Example: ctrl+a -> ^A
+ *      -> NOTE!! char HAVE TO be UPERCASE
+ *  - Shift: just use an upercase char
+ * Characters:
+ *  - alphas from a-z
+ */
 
+/* This macro can be used to allow user create a new
+ * bind without write a lot. It is only a wrapper for
+ * previos declared functions */
+#define kh_bind_create(str, action)            \
+    do                                         \
+    {                                          \
+        Keybind __kb__ = kh_bind_parse((str)); \
+        kh_bind_set_func(&__kb__, (action));   \
+        kh_bind_add(__kb__);                   \
+    } while (0)
 
 /***************************************************
  * ---| Utils (utils.c)                       |--- *

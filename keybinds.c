@@ -1,4 +1,3 @@
-#define ASCII_TABLE_REPR
 #include "vshkh.h"
 #include <stddef.h>
 #include <stdio.h>
@@ -34,13 +33,9 @@ kh_bind_remove(Keybind kb)
 BindFunc
 kh_bind_get(Keybind kb)
 {
-    printf("Getting %c with mods %d\n", kb.kp[0].c, kb.kp[0].mods);
     if (array_exist(kb))
-    {
-        printf("Func = %p\n", array_exec(kb));
         return array_exec(kb);
-    }
-    printf("No in array!\n");
+
     return NULL;
 }
 
