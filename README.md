@@ -14,16 +14,16 @@ Function descriptions and those stuff are written in vshkh.h
 
 Keypress read
 
--[x] alphas (a-z, A-Z symbols)
--[x] SHIFT + alphas
--[x] CTRL + '@', 'A'-'Z', '[', '\', ']', '^', '_'
--[x] ALT + alphas
+- [x] alphas (a-z, A-Z symbols)
+- [x] SHIFT + alphas
+- [x] CTRL + '@', 'A'-'Z', '[', '\', ']', '^', '_'
+- [x] ALT + alphas
 
 Binds
 
--[x] Single key bind
--[x] CTRL + single key bind
--[?] ALT + single key should work
+- [x] Single key bind
+- [x] CTRL + single key bind
+- [?] ALT + single key should work
 
 ## Potential issues + todos
 
