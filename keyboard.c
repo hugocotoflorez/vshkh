@@ -2,8 +2,6 @@
 #include <fcntl.h>
 #include <pthread.h>
 #include <sched.h>
-#include <signal.h>
-#include <stdio.h>
 #include <stdlib.h>
 #include <termios.h>
 #include <unistd.h>
@@ -27,7 +25,6 @@ static void
 __enable_raw_mode()
 {
     struct termios raw_opts;
-    printf("Enable raw mode\n");
     tcgetattr(STDIN_FILENO, &origin_termios);
     raw_opts = origin_termios;
     cfmakeraw(&raw_opts);
@@ -44,7 +41,6 @@ __enable_raw_mode()
 static void
 __disable_raw_mode()
 {
-    printf("Disable raw mode\n");
     tcsetattr(STDIN_FILENO, TCSANOW, &origin_termios);
     fcntl(STDIN_FILENO, F_SETFL, flags);
     system("reset"); // force the terminal to reset
