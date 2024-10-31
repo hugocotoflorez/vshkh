@@ -13,12 +13,14 @@ Function descriptions and those stuff are written in vshkh.h
 ## Stuff that work
 
 Keypress read
+
 -[x] alphas (a-z, A-Z symbols)
 -[x] SHIFT + alphas
 -[x] CTRL + '@', 'A'-'Z', '[', '\', ']', '^', '_'
 -[x] ALT + alphas
 
 Binds
+
 -[x] Single key bind
 -[x] CTRL + single key bind
 -[?] ALT + single key should work
