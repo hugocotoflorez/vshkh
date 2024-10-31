@@ -1,6 +1,6 @@
 # vshkh
 
-Very Simple hugo's Keyboard Handler
+Very Simple Hugo's Keyboard Handler
 
 ## About
 
