@@ -14,8 +14,7 @@ kh_is_arrow(Keypress kp)
 }
 
 /* Following functions return >0 if keypress has
- * the modifier in the function name pressed or
- * 0 otherwise */
+ * the modifier in thekeypress or 0 otherwise */
 inline int
 kh_has_ctrl(Keypress kp)
 {

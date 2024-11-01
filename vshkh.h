@@ -333,9 +333,15 @@ Keybind kh_bind_parse(const char *str);
  * Modifiers:
  *  - Ctrl: represented as ^. Example: ctrl+a -> ^A
  *      -> NOTE!! char HAVE TO be UPERCASE
+ *      -> NOTE!! ctrl + 1...0 dont exist
  *  - Shift: just use an upercase char
+ *  - Alt: represented as &. Example: alt+a -> &a
+ *  - Ctrl+Alt: represented as ^&. Example: ctrl+alt+a -> ^&A
+ *      -> NOTE!! cant map alt+ctrl+upercase
  * Characters:
  *  - alphas from a-z
+ *  - symbols
+ * Special symbols: \^ -> ^ (for any char)
  */
 
 /* This macro can be used to allow user create a new

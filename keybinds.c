@@ -87,16 +87,21 @@ kh_bind_parse(const char *str)
     {
         switch (*str)
         {
-            case '\\':
+            case '\\': // escape symbols
                 ++str;
+                /* if *str is \0 it can crash */
                 goto __add__;
 
-            case '^':
+            case '^': // CTRL
                 kp.mods |= CTRL_MOD;
                 kp.mods |= SHIFT_MOD;
                 break;
 
-            case 'A' ... 'Z':
+            case '&': // ALT
+                kp.mods |= ALT_MOD;
+                break;
+
+            case 'A' ... 'Z': // Upercase
                 kp.mods |= SHIFT_MOD;
 
             default:
@@ -111,14 +116,3 @@ kh_bind_parse(const char *str)
     return kb;
 }
 
-/******************************************************
- * ---| STR Keybind format                       |--- *
- ******************************************************/
-
-/* the max keypresses are stored in KEYBINDLEN
- * Modifiers:
- *  - Ctrl: represented as ^. Example: ctrl+a -> ^a
- *  - Shift: just use an Upercase character
- * Characters: alphas from a-z
- * Special symbols: \^ -> ^ (for any char)
- */

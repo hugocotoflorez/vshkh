@@ -40,6 +40,18 @@ clear()
     fflush(stdout);
 }
 
+void
+ctrlalt()
+{
+    printf("ctrl+alt+a\n");
+}
+
+void
+alt()
+{
+    printf("alt+a\n");
+}
+
 int
 main(void)
 {
@@ -49,6 +61,8 @@ main(void)
     kh_bind_create("^C", die);   // assign die to ctrl+c
     kh_bind_create("^L", clear); // assign clear to ctrl+l
     kh_bind_create("^[", esc);   // assign esc to esc
+    kh_bind_create("&a", alt);   // assign to alt-a
+    kh_bind_create("^&A", ctrlalt);   // assign to C-alt-a
     /*
         kh_bind_create("0", hello);
         kh_bind_create("*", hello);

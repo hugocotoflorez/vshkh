@@ -13,20 +13,20 @@ Function descriptions and those stuff are written in vshkh.h
 ## Stuff that work
 
 Keypress read
-- [x] alphas (a-z, A-Z symbols)
-- [x] SHIFT + alphas
-- [x] CTRL + '@', 'A'-'Z', '[', '\', ']', '^', '_'
-- [x] ALT + alphas
+- [x] alphas (a-z, a-z symbols)
+- [x] shift + alphas
+- [x] ctrl + '@', 'a'-'z', '[', '\', ']', '^', '_'
+- [x] alt + alphas
 
 Binds
-- [x] Single key bind
-- [x] CTRL + single key bind
+- [x] single key bind
+- [x] ctrl + single key bind
+- [x] alt + single key bind
+- [x] ctrl + alt
 
 ## Potential issues + todos
 
-- TODO: ALT + single key
-
-- CTRL + SHIFT + KEY: crahes
+- CTRL + SHIFT + KEY: crah
 - SUPR mod: not implemented
 - disable raw mode: manually reset terminal (hardcoded)
 - CTRL + 1,9,0 dont exists
