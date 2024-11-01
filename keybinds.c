@@ -93,6 +93,7 @@ kh_bind_parse(const char *str)
 
             case '^':
                 kp.mods |= CTRL_MOD;
+                kp.mods |= SHIFT_MOD;
                 break;
 
             case 'A' ... 'Z':
@@ -120,5 +121,4 @@ kh_bind_parse(const char *str)
  *  - Shift: just use an Upercase character
  * Characters: alphas from a-z
  * Special symbols: \^ -> ^ (for any char)
- *
- * Symbols and numbers are not valid chars */
+ */

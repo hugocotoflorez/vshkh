@@ -28,6 +28,12 @@ pause_wrap()
 }
 
 void
+esc()
+{
+    printf("ESC\n");
+}
+
+void
 clear()
 {
     printf("\033[H\033[2J");
@@ -41,7 +47,8 @@ main(void)
     kh_start();
 
     kh_bind_create("^C", die);   // assign die to ctrl+c
-    kh_bind_create("^L", clear); // assign die to ctrl+c
+    kh_bind_create("^L", clear); // assign clear to ctrl+l
+    kh_bind_create("^[", esc);   // assign esc to esc
     /*
         kh_bind_create("0", hello);
         kh_bind_create("*", hello);
