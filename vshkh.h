@@ -210,8 +210,9 @@ typedef enum
     CTRL_MOD   = 1 << 1,
     SHIFT_MOD  = 1 << 2,
     ALT_MOD    = 1 << 3,
-    IS_ARROW   = 1 << 4,
-    IS_INVALID = 1 << 5,
+    SUPR_MOD   = 1 << 4,
+    IS_ARROW   = 1 << 5,
+    IS_INVALID = 1 << 6,
 } Mods;
 
 /* Keypress return a character with the mods used.
@@ -338,6 +339,8 @@ Keybind kh_bind_parse(const char *str);
  *  - Alt: represented as &. Example: alt+a -> &a
  *  - Ctrl+Alt: represented as ^&. Example: ctrl+alt+a -> ^&A
  *      -> NOTE!! cant map alt+ctrl+upercase
+ *  - SUPR: represented as @. Example: supr+a -> @a
+ *  - SUPR + mod: concatenate, except that ctrl dont allow lowercase
  * Characters:
  *  - alphas from a-z
  *  - symbols
@@ -380,6 +383,7 @@ Arrowkey kh_is_arrow(Keypress);
 int kh_has_ctrl(Keypress);
 int kh_has_shift(Keypress);
 int kh_has_alt(Keypress);
+int kh_has_supr(Keypress);
 int kh_valid_kp(Keypress);
 
 int kb_is_equal(Keybind, Keybind);

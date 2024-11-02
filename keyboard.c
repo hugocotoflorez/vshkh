@@ -2,6 +2,8 @@
 #include <fcntl.h>
 #include <pthread.h>
 #include <sched.h>
+#include <stdatomic.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <termios.h>
 #include <unistd.h>
@@ -18,111 +20,144 @@ static pthread_t main_thread;
 /* sleep time while waiting in kh_wait */
 #define TWAIT 10000
 
+#define BUFSIZE 10
+
 static struct termios origin_termios;
 static int            flags;
 
-/* SUPR + [SHIFT] + key
- * Conclussion: First two numbers are totally random.
- * The last number is 10 if shift. I dont try to use other mods.
- * WTF is this, it has no order, why the A,B,C are at the end? wtff */
-// clang-format off
-static char supr_lookup_table[10][23][11] = {
-[ 1][ 0][ 9]='d',
-[ 1][ 1][ 9]='e',
-[ 1][ 2][ 9]='f',
-[ 1][ 3][ 9]='g',
-[ 1][ 4][ 9]='h',
-[ 1][ 5][ 9]='i',
-[ 1][ 6][ 9]='j',
-[ 1][ 7][ 9]='k',
-[ 1][ 8][ 9]='l',
-[ 1][ 9][ 9]='m',
-[ 1][10][ 9]='n',
-[ 1][11][ 9]='o',
-[ 1][12][ 9]='p',
-[ 1][13][ 9]='q',
-[ 1][14][ 9]='r',
-[ 1][15][ 9]='s',
-[ 1][16][ 9]='t',
-[ 1][17][ 9]='u',
-[ 1][18][ 9]='v',
-[ 1][19][ 9]='w',
-[ 1][20][ 9]='x',
-[ 1][21][ 9]='y',
-[ 1][22][ 9]='z',
-[ 1][ 0][10]='D',
-[ 1][ 1][10]='E',
-[ 1][ 2][10]='F',
-[ 1][ 3][10]='G',
-[ 1][ 4][10]='H',
-[ 1][ 5][10]='I',
-[ 1][ 6][10]='J',
-[ 1][ 7][10]='K',
-[ 1][ 8][10]='L',
-[ 1][ 9][10]='M',
-[ 1][10][10]='N',
-[ 1][11][10]='O',
-[ 1][12][10]='P',
-[ 1][13][10]='Q',
-[ 1][14][10]='R',
-[ 1][15][10]='S',
-[ 1][16][10]='T',
-[ 1][17][10]='U',
-[ 1][18][10]='V',
-[ 1][19][10]='W',
-[ 1][20][10]='X',
-[ 1][21][10]='Y',
-[ 1][22][10]='Z',
-[ 3][ 2][ 9]=' ',
-[ 3][ 9][ 9]='\'',
-[ 4][ 4][ 9]=',',
-[ 4][ 5][ 9]='-',
-[ 4][ 6][ 9]='.',
-[ 4][ 7][ 9]='/',
-[ 4][ 9][ 9]='1',
-[ 5][ 0][ 9]='2',
-[ 5][ 1][ 9]='3',
-[ 5][ 2][ 9]='4',
-[ 5][ 3][ 9]='5',
-[ 5][ 4][ 9]='6',
-[ 5][ 5][ 9]='7',
-[ 5][ 6][ 9]='8',
-[ 5][ 7][ 9]='9',
-[ 5][ 8][ 9]='0',
-[ 5][ 9][ 9]=';',
-[ 4][ 4][10]='<',
-[ 4][ 5][10]='_',
-[ 4][ 6][10]='>',
-[ 4][ 7][10]='?',
-[ 4][ 8][10]=')',
-[ 4][ 9][10]='!',
-[ 5][ 0][10]='@',
-[ 5][ 1][10]='#',
-[ 5][ 2][10]='$',
-[ 5][ 3][10]='%',
-[ 5][ 4][10]='^',
-[ 5][ 5][10]='&',
-[ 5][ 6][10]='*',
-[ 5][ 7][10]='(',
-[ 5][ 9][10]=':',
-[ 6][ 1][ 9]='=',
-[ 6][ 1][10]='+',
-[ 9][ 1][ 9]='[',
-[ 9][ 2][ 9]='\\',
-[ 9][ 3][ 9]=']',
-[ 9][ 6][ 9]='`',
-[ 9][ 7][ 9]='a',
-[ 9][ 8][ 9]='b',
-[ 9][ 9][ 9]='c',
-[ 9][ 1][10]='{',
-[ 9][ 2][10]='|',
-[ 9][ 3][10]='}',
-[ 9][ 6][10]='~',
-[ 9][ 7][10]='A',
-[ 9][ 8][10]='B',
-[ 9][ 9][10]='C',
+/* SUPR + SHIFT + key
+ * Uper case characters are placed over
+ * lower case ones that share key place. */
+static char supr_shift_lookup[] = {
+    [0] = '?',
+    [1] = '?',
+    [2] = '?',
+    [3] = '?',
+    [4] = '?',
+    [5] = '?',
+    [6] = '?',
+    [7] = '?',
+    [8] = '?',
+    [9] = '?',
+    [10] = '?',
+    [11] = '?',
+    [12] = '?',
+    [13] = '?',
+    [14] = '?',
+    [15] = '?',
+    [16] = '?',
+    [17] = '?',
+    [18] = '?',
+    [19] = '?',
+    [20] = '?',
+    [21] = '?',
+    [22] = '?',
+    [23] = '?',
+    [24] = '?',
+    [25] = '?',
+    [26] = '?',
+    [27] = '?',
+    [28] = '?',
+    [29] = '?',
+    [30] = '?',
+    [31] = '?',
+    [32] = '?',
+    [33] = '?',
+    [34] = '?',
+    [35] = '?',
+    [36] = '?',
+    [37] = '?',
+    [38] = '?',
+    [39] = '?',
+    [40] = '?',
+    [41] = '?',
+    [42] = '?',
+    [43] = '?',
+    [44] = '<',
+    [45] = '_',
+    [46] = '>',
+    [47] = '?',
+    [48] = ')',
+    [49] = '!',
+    [50] = '@',
+    [51] = '#',
+    [52] = '$',
+    [53] = '%',
+    [54] = '^',
+    [55] = '&',
+    [56] = '*',
+    [57] = '(',
+    [58] = '?',
+    [59] = ':',
+    [60] = '?',
+    [61] = '?',
+    [62] = '?',
+    [63] = '?',
+    [64] = '?',
+    [65] = '?',
+    [66] = '?',
+    [67] = '?',
+    [68] = '?',
+    [69] = '?',
+    [70] = '?',
+    [71] = '?',
+    [72] = '?',
+    [73] = '?',
+    [74] = '?',
+    [75] = '?',
+    [76] = '?',
+    [77] = '?',
+    [78] = '?',
+    [79] = '?',
+    [80] = '?',
+    [81] = '?',
+    [82] = '?',
+    [83] = '?',
+    [84] = '?',
+    [85] = '?',
+    [86] = '?',
+    [87] = '?',
+    [88] = '?',
+    [89] = '?',
+    [90] = '?',
+    [91] = '{',
+    [92] = '|',
+    [93] = '}',
+    [94] = '?',
+    [95] = '?',
+    [96] = '~',
+    [97] = 'A',
+    [98] = 'B',
+    [99] = 'C',
+    [100] = 'D',
+    [101] = 'E',
+    [102] = 'F',
+    [103] = 'G',
+    [104] = 'H',
+    [105] = 'I',
+    [106] = 'J',
+    [107] = 'K',
+    [108] = 'L',
+    [109] = 'M',
+    [110] = 'N',
+    [111] = 'O',
+    [112] = 'P',
+    [113] = 'Q',
+    [114] = 'R',
+    [115] = 'S',
+    [116] = 'T',
+    [117] = 'U',
+    [118] = 'V',
+    [119] = 'W',
+    [120] = 'X',
+    [121] = 'Y',
+    [122] = 'Z',
+    [123] = '?',
+    [124] = '?',
+    [125] = '?',
+    [126] = '?',
+    [127] = '?',
 };
-// clang-format on
 
 static void
 __enable_raw_mode()
@@ -202,48 +237,128 @@ __analize(char c)
     __kp_action(kp);
 }
 
+Keypress
+__get_arrow_kp(char c)
+{
+    switch (c)
+    {
+        case 'A':
+            return ((Keypress) {
+            .c    = ARROW_UP,
+            .mods = IS_ARROW,
+            });
+
+        case 'B':
+            return ((Keypress) {
+            .c    = ARROW_DOWN,
+            .mods = IS_ARROW,
+            });
+
+        case 'C':
+            return ((Keypress) {
+            .c    = ARROW_RIGHT,
+            .mods = IS_ARROW,
+            });
+
+        case 'D':
+            return ((Keypress) {
+            .c    = ARROW_LEFT,
+            .mods = IS_ARROW,
+            });
+    }
+    return INVALID_KP;
+}
+
+
+void
+__supr_get_mods(Keypress *kp, int supr_mod, int supr_key)
+{
+    switch (supr_mod) /* SUPR MODS */
+    {
+        case 0x9: // no mod
+            break;
+
+        case 0xA: // shift
+            kp->mods |= (SHIFT_MOD);
+            kp->c = supr_shift_lookup[supr_key];
+            break;
+        case 0xB: // alt
+            kp->mods |= (ALT_MOD);
+            break;
+        case 0xD: // ctrl
+            kp->mods |= (CTRL_MOD);
+            break;
+        case 0xC: // shift + alt
+            kp->mods |= (SHIFT_MOD | ALT_MOD);
+            kp->c = supr_shift_lookup[supr_key];
+            break;
+        case 0xE: // shift + ctrl
+            kp->mods |= (CTRL_MOD | SHIFT_MOD);
+            kp->c = supr_shift_lookup[supr_key];
+            break;
+        case 0xF: // ctrl + alt
+            kp->mods |= (CTRL_MOD | ALT_MOD);
+            break;
+        case 0x10: // shift + ctrl + alt
+            kp->mods |= (CTRL_MOD | SHIFT_MOD | ALT_MOD);
+            kp->c = supr_shift_lookup[supr_key];
+            break;
+    }
+}
+
+Keypress
+__supr_arrow_mod(char *buf, ssize_t n)
+{
+    Keypress kp;
+    int      supr_key;
+    int      supr_mod;
+    char     c;
+
+    sscanf(buf, "\x1b[%d;%d%c", &supr_key, &supr_mod, &c);
+    kp = __get_arrow_kp(c);
+    kp.mods |= SUPR_MOD;
+    __supr_get_mods(&kp, supr_mod, supr_key);
+    return kp;
+}
+
+Keypress
+__supr_mod(char *buf, ssize_t n)
+{
+    Keypress kp;
+    int      supr_key;
+    int      supr_mod;
+
+    sscanf(buf, "\x1b[%d;%du", &supr_key, &supr_mod);
+    // printf("BUFFER size: %zd -> %d %d \n", n, supr_key, supr_mod);
+    /* defaults */
+    kp.c    = supr_key;
+    kp.mods = SUPR_MOD;
+
+    __supr_get_mods(&kp, supr_mod, supr_key);
+
+    return kp;
+}
+
 void
 __esc_special(char *buf)
 {
     ssize_t  n;
     Keypress kp;
 
-    switch (n = read(STDIN_FILENO, buf + 1, 2))
+    switch (n = read(STDIN_FILENO, buf + 1, BUFSIZE - 1))
     {
         case 2:
             if (buf[1] != '[')
                 goto __normal__; // just to avoid nesting
 
-            switch (buf[2])
+            kp = __get_arrow_kp(buf[2]);
+            /* Is an arrow, or INVALID_KP if not. */
+            if (kh_valid_kp(kp))
             {
-                case 'A':
-                    __kp_action((Keypress) {
-                    .c    = ARROW_UP,
-                    .mods = IS_ARROW,
-                    });
-                    return;
-
-                case 'B':
-                    __kp_action((Keypress) {
-                    .c    = ARROW_DOWN,
-                    .mods = IS_ARROW,
-                    });
-                    return;
-
-                case 'C':
-                    __kp_action((Keypress) {
-                    .c    = ARROW_RIGHT,
-                    .mods = IS_ARROW,
-                    });
-                    return;
-
-                case 'D':
-                    __kp_action((Keypress) {
-                    .c    = ARROW_LEFT,
-                    .mods = IS_ARROW,
-                    });
-                    return;
+                __kp_action(kp);
+                return;
             }
+
         __normal__:
             __analize(buf[0]);
             __analize(buf[1]);
@@ -260,8 +375,16 @@ __esc_special(char *buf)
         case 0:
         case -1: // eof -> no input
             __analize(buf[0]);
+            break;
 
         default:
+            if (buf[n] == 'u')
+                kp = __supr_mod(buf, n);
+
+            else if (buf[n] >= 'A' && buf[n] <= 'D')
+                kp = __supr_arrow_mod(buf, n);
+
+            __kp_action(kp);
             break;
     }
 }
@@ -270,7 +393,7 @@ static void *
 __keyboard_handler(void *args)
 {
     ssize_t n;
-    char    buf[3];
+    char    buf[BUFSIZE];
 
     __enable_raw_mode();
 

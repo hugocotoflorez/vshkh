@@ -7,10 +7,10 @@
 Arrowkey
 kh_is_arrow(Keypress kp)
 {
-    if (kp.mods != IS_ARROW)
-        return NO_ARROW;
+    if (kp.mods & IS_ARROW)
+        return kp.c;
 
-    return kp.c;
+    return NO_ARROW;
 }
 
 /* Following functions return >0 if keypress has
@@ -31,6 +31,12 @@ inline int
 kh_has_alt(Keypress kp)
 {
     return kp.mods & ALT_MOD;
+}
+
+inline int
+kh_has_supr(Keypress kp)
+{
+    return kp.mods & SUPR_MOD;
 }
 
 inline int

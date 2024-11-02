@@ -89,19 +89,39 @@ kh_bind_parse(const char *str)
         {
             case '\\': // escape symbols
                 ++str;
+                kp.mods |= SHIFT_MOD;
+                /* all ^&@ uses shift mod */
                 /* if *str is \0 it can crash */
                 goto __add__;
 
             case '^': // CTRL
                 kp.mods |= CTRL_MOD;
-                kp.mods |= SHIFT_MOD;
+                /* If the modifier is ctrl and dont have supr it
+                 * set shift mod (ctrl requires shift is not used
+                 * with super */
+                if (!(kp.mods & SUPR_MOD))
+                    kp.mods |= SHIFT_MOD;
                 break;
 
             case '&': // ALT
                 kp.mods |= ALT_MOD;
                 break;
 
+            case '@': // SUPR
+                kp.mods |= SUPR_MOD;
+                /* Disable shift if ctrl had set it, because shift is
+                 * set by the char that is the last part of the bind */
+                kp.mods &= ~SHIFT_MOD;
+                break;
+
+                // clang-format off
             case 'A' ... 'Z': // Upercase
+            /* Chars that uses shift modifier */
+            case '<': case '_': case '>': case '?':
+            case ')': case '!': case '#': case '$':
+            case '%': case '*': case '(': case ':':
+            case '{': case '|': case '}': case '~':
+                // clang-format on
                 kp.mods |= SHIFT_MOD;
 
             default:
@@ -115,4 +135,3 @@ kh_bind_parse(const char *str)
     }
     return kb;
 }
-
