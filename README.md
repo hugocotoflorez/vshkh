@@ -8,6 +8,28 @@ Description should be written here.
 
 ## User Interface
 
+### Basic usage
+
+Create a bind
+```c
+void func() {printf("Hello\n");}
+kh_bind_create("@^h", func);
+```
+
+Initialize the handler
+``` c
+kh_start();
+```
+Read if has input
+```c
+Keypress kp;
+kp = kh_wait();
+```
+Close the handler
+```c
+kh_end();
+```
+
 Function descriptions and those stuff are written in vshkh.h
 
 ## Binds formatting
