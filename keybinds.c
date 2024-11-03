@@ -3,8 +3,6 @@
 #include <stdio.h>
 #include <string.h>
 
-#define DEBUG
-
 extern Array kb_array;
 
 /* Add a keybind. If same sequences of keypresses are
@@ -116,13 +114,12 @@ kh_bind_parse(const char *str)
 
                 // clang-format off
             case 'A' ... 'Z': // Upercase
-            /* Chars that uses shift modifier */
-            case '<': case '_': case '>': case '?':
+            case '<': case '_': case '>': case '?': // Chars that uses shift modifier
             case ')': case '!': case '#': case '$':
             case '%': case '*': case '(': case ':':
-            case '{': case '|': case '}': case '~':
-                // clang-format on
+            case '{': case '|': case '}': case '~': // clang-format on
                 kp.mods |= SHIFT_MOD;
+                goto __add__; // avoid implicit-fallthought
 
             default:
             __add__:

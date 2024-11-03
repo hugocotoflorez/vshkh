@@ -24,12 +24,13 @@
  * void     kh_bind_remove(Keybind);                     *
  * void     kh_bind_add(Keybind);                        *
  * int      kh_valid_kb(Keybind);                        *
- * Keypress kh_flush();                                  *
+ * void     kh_flush();                                  *
  * Keypress kh_wait();                                   *
  * Keypress kh_get();                                    *
  * void     kh_end();                                    *
  * void     kh_pause();                                  *
  * void     kh_start();                                  *
+ * void     kh_toggle();                                 *
  * int      kh_has_ctrl(Keypress);                       *
  * int      kh_has_shift(Keypress);                      *
  * int      kh_has_alt(Keypress);                        *
@@ -243,6 +244,12 @@ void kh_start();
  * once it starts again */
 void kh_pause();
 
+/* Toggle the handler status, the input would be read
+ * once it starts again. kh_pause pauses the handler and
+ * kh_start starts the handler, both functions can be called
+ * more than once without breaking the program (i hope). */
+void kh_toggle();
+
 /* Close the handler and restore all values
  * to default */
 void kh_end();
@@ -260,7 +267,7 @@ Keypress kh_wait();
 /* Ignore buffered keypresses and empty the
  * buffer. Removed keypressed cant be accesed
  * after calling this funcion. */
-Keypress kh_flush();
+void kh_flush();
 
 
 /***************************************************
@@ -493,7 +500,8 @@ void buffer_new(int);
 Keypress buffer_add(Keypress);
 
 /* Remove an element from the buffer
- * and return it */
+ * and return it. If no elements found,
+ * it returns INVALID_KP. */
 Keypress buffer_pop();
 
 /* Get the top of the buffer */

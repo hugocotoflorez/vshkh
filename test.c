@@ -6,7 +6,7 @@
 #include <unistd.h>
 
 void
-die()
+__die()
 {
     kh_end();
     exit(0);
@@ -87,21 +87,21 @@ main(void)
     Keypress kp;
     kh_start();
 
-    kh_bind_create("^C", die);      // assign die to ctrl+c
-    kh_bind_create("^L", clear);    // assign clear to ctrl+l
-    kh_bind_create("^[", esc);      // assign esc to esc
-    kh_bind_create("&a", alt);      // assign to alt-a
-    kh_bind_create("^&A", ctrlalt); // assign to C-alt-a
-    kh_bind_create("@a", supr);     // assign to supr-a
-    kh_bind_create("@A", supr2);    // assign to supr-A
-    kh_bind_create("^@A", supr3);   // assign to supr-ctrl-A
-    kh_bind_create("@&a", supr4);   // assign to supr-alt-a
-    kh_bind_create("@^1", supr_1);  // assign to supr-1
+    kh_bind_create("^C", __die);      // assign __die to ctrl+c
     /*
-        kh_bind_create("0", hello);
-        kh_bind_create("*", hello);
-        kh_bind_create("h", die);
-        kh_bind_create("h", hello); // change function binded to h
+        kh_bind_create("0", hello);     // assign hello to 0
+        kh_bind_create("*", hello);     // assign hellp to *
+        kh_bind_create("h", __die);       // assign __die to h
+        kh_bind_create("h", hello);     // change function binded to h
+        kh_bind_create("^L", clear);    // assign clear to ctrl+l
+        kh_bind_create("^[", esc);      // assign esc to esc
+        kh_bind_create("&a", alt);      // assign to alt-a
+        kh_bind_create("^&A", ctrlalt); // assign to C-alt-a
+        kh_bind_create("@a", supr);     // assign to supr-a
+        kh_bind_create("@A", supr2);    // assign to supr-A
+        kh_bind_create("^@A", supr3);   // assign to supr-ctrl-A
+        kh_bind_create("@&a", supr4);   // assign to supr-alt-a
+        kh_bind_create("@^1", supr_1);  // assign to supr-1
      */
 
     while (1)
@@ -117,20 +117,23 @@ main(void)
         if (kh_has_alt(kp))
             printf("ALT+");
 
+        if(kh_has_shift(kp))
+            printf("SHIFT+");
+
         if (kh_is_arrow(kp))
             switch (kp.c)
             {
                 case ARROW_UP:
-                    printf("arrow up");
+                    printf("up");
                     break;
                 case ARROW_DOWN:
-                    printf("arrow down");
+                    printf("down");
                     break;
                 case ARROW_LEFT:
-                    printf("arrow left");
+                    printf("left");
                     break;
                 case ARROW_RIGHT:
-                    printf("arrow right");
+                    printf("right");
                     break;
             }
 
