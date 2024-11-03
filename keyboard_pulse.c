@@ -3,6 +3,7 @@
 #include "vshkh.h"
 #include <signal.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <sys/types.h>
 #include <termios.h>
 #include <unistd.h>
@@ -25,18 +26,26 @@ set_raw_mode(int fd)
 void
 exit_handler(int s)
 {
+    static FILE *f = NULL;
+    if (f)
+        fclose(f);
     tcsetattr(STDIN_FILENO, 0, &origin_termios[1]);
-    raise(SIGKILL);
+    exit(0);
 }
 
 int
 main(int argc, char *argv[])
 {
-    char    c;
-    ssize_t n;
+    char         c;
+    ssize_t      n;
+    static FILE *f;
+
+    if (argc == 2)
+        f = fopen(argv[1], "a");
 
     signal(SIGINT, exit_handler);
     signal(SIGTERM, exit_handler);
+    signal(SIGKILL, exit_handler);
 
     set_raw_mode(STDIN_FILENO);
 
@@ -54,6 +63,8 @@ main(int argc, char *argv[])
                 break;
             default:
                 printf("[%-3s] Hx: %#-3x (%s)\n", REPR[c], c, DESC[c]);
+                if (f)
+                    fprintf(f, "[%-3s] Hx: %#-3x (%s)\n", REPR[c], c, DESC[c]);
                 break;
         }
     }

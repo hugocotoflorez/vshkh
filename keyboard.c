@@ -200,11 +200,14 @@ __supr_get_char(Keypress *kp, int supr_mod, int supr_key)
 {
     switch (supr_mod) /* SUPR MODS */
     {
-        case 0x3:
-        case 0xA:  // shift
-        case 0xC:  // shift + alt
-        case 0xE:  // shift + ctrl
-        case 0x10: // shift + ctrl + alt
+        case 0x2:  // arrow + shift
+        case 0x3:  // arrow + alt
+        case 0x4:  // arrow + alt + shift
+        case 0x8:  // arrow + ctrl + alt + shift
+        case 0xA:  // supr + shift
+        case 0xC:  // supr + shift + alt
+        case 0xE:  // supr + shift + ctrl
+        case 0x10: // supr + shift + ctrl + alt
             kp->c = supr_shift_lookup[supr_key];
             kp->c = supr_shift_lookup[supr_key];
             break;
@@ -240,7 +243,7 @@ __supr_get_mods(Keypress *kp, int supr_mod, int supr_key)
             kp->mods |= (CTRL_MOD | ALT_MOD | SHIFT_MOD);
             break;
         case 0x9:
-            /* This is the case case for supr mods, but as it
+            /* This is the base case for supr mods, but as it
              * is shared for arrow keypresses, I add the super mod
              * here because othersize arrow dont have this mod. In
              * the supr cases remaining the supr mod is add after
@@ -357,6 +360,15 @@ __esc_special(char *buf)
             // Alt mod
             /* Analize single key for allow alt+ctrl */
             kp = __get_kp_from_char(buf[1]);
+            /* This piece of code is only called
+             * if alt is used with ctrl without shift, or
+             * without mods, so as ctrl set shift mod I
+             * have to unset it manually. */
+            if (kp.mods & CTRL_MOD)
+                kp.mods &= ~SHIFT_MOD;
+            /* Char is represented as upercase because it
+             * calls ctrl logic that is limited to upercase
+             * letters and a little symbols. */
             kp.mods |= ALT_MOD;
             __kp_action(kp);
             return;
@@ -367,7 +379,9 @@ __esc_special(char *buf)
             break;
 
         default:
-            /* supr mods end with 'u' */
+            /* supr mods end with 'u'. Also
+             * alt-ctrl-shift-a, so I change some
+             * code to allow this behaviour.*/
             if (buf[n] == 'u')
                 kp = __get_supr_kp(buf);
 

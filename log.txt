@@ -1,0 +1,22 @@
+a
+        [a  ] Hx: 0x61 (Lowercase a)
+
+Ctrl-a
+        [SOH] Hx: 0x1 (Start of Heading)
+
+Alt-a
+        [ESC] Hx: 0x1b (Escape)
+        [a  ] Hx: 0x61 (Lowercase a)
+
+Alt-ctrl-a
+        [ESC] Hx: 0x1b (Escape)
+        [SOH] Hx: 0x1 (Start of Heading)
+
+Alt-ctrl-shift-a
+        [ESC] Hx: 0x1b (Escape)
+        [[  ] Hx: 0x5b (Opening bracket)
+        [9  ] Hx: 0x39 (Nine)
+        [7  ] Hx: 0x37 (Seven)
+        [;  ] Hx: 0x3b (Semicolon)
+        [8  ] Hx: 0x38 (Eight)
+        [u  ] Hx: 0x75 (Lowercase u)

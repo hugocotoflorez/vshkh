@@ -16,7 +16,7 @@ Function descriptions and those stuff are written in vshkh.h
 
 - **Normal**: lowerase or some symbols
 - **Shift**: upercase or some symbols
-- **Shift + ctrl**: ^ + A-Z or some symbols
+- **Shift + ctrl**: All ctrl + lowecase is read as ctrl + upercase, but using shift with ctrl chashes
 - **Shift + alt**: & + A-Z or some symbols
 - **Shift + supr**: All symbols that require physical shift
 - **Shift + ctrl + alt**: ^& + A-Z or some symbols
@@ -36,13 +36,12 @@ Function descriptions and those stuff are written in vshkh.h
 
 ## Potential issues + todos
 
+- **Potential issue: CTRL + lowercase is read as ctrl + upercase and ctrl + shift cant be read**
 - CTRL is too limited
-- CTRL + SHIFT + KEY: crah
+- CTRL + SHIFT + KEY: crash
 - CTRL + 1,9,0 dont exists
-
 - ALT + CTRL set shift
 - ALT + CTRL + SHIFT uset shift
 - ^&A only maps to C+Alt+a, if shift is used dont call func
-
 - right + left + down at the same time breaks the handler. with -O3 it doesnt happened xd
 
