@@ -17,16 +17,19 @@ Keypress read
 - [x] shift + alphas
 - [x] ctrl + '@', 'a'-'z', '[', '\', ']', '^', '_'
 - [x] alt + alphas
+- [x] supr + alphas
 
 Binds
 - [x] single key bind
 - [x] ctrl + single key bind
 - [x] alt + single key bind
 - [x] ctrl + alt
+- [x] supr + alt + shift + ctrl
 
 ## Potential issues + todos
 
+TODO:
+- CTRL is too limited
 - CTRL + SHIFT + KEY: crah
-- SUPR mod: not implemented
-- disable raw mode: manually reset terminal (hardcoded)
 - CTRL + 1,9,0 dont exists
+
