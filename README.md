@@ -10,35 +10,6 @@ Description should be written here.
 
 Function descriptions and those stuff are written in vshkh.h
 
-## Stuff that work
-
-Keypress read
-- [x] alphas (a-z, a-z symbols)
-- [x] shift + alphas
-- [x] ctrl + '@', 'a'-'z', '[', '\', ']', '^', '_'
-- [x] alt + alphas
-- [x] supr + alphas
-
-Binds
-- [x] single key bind
-- [x] ctrl + single key bind
-- [x] alt + single key bind
-- [x] ctrl + alt
-- [x] supr + alt + shift + ctrl
-
-## Potential issues + todos
-
-TODO:
-- CTRL is too limited
-- CTRL + SHIFT + KEY: crah
-- CTRL + 1,9,0 dont exists
-
-- ALT + CTRL set shift
-- ALT + CTRL + SHIFT uset shift
-- ^&A only maps to C+Alt+a, if shift is used dont call func
-
-- right + left + down at the same time breaks the handler. with -O3 it doesnt happened xd
-
 ## Binds formatting
 
 ### Mods
@@ -62,4 +33,16 @@ TODO:
 
 > [!CAUTION]
 > Ctrl without supr dont allow lowercase chars
+
+## Potential issues + todos
+
+- CTRL is too limited
+- CTRL + SHIFT + KEY: crah
+- CTRL + 1,9,0 dont exists
+
+- ALT + CTRL set shift
+- ALT + CTRL + SHIFT uset shift
+- ^&A only maps to C+Alt+a, if shift is used dont call func
+
+- right + left + down at the same time breaks the handler. with -O3 it doesnt happened xd
 
