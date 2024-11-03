@@ -18,6 +18,12 @@ clear()
     fflush(stdout);
 }
 
+void
+func()
+{
+    puts("C-Alt-Shift-A");
+}
+
 int
 main(void)
 {
@@ -26,6 +32,7 @@ main(void)
 
     kh_bind_create("^L", clear); // assign clear to ctrl+l
     kh_bind_create("^C", die);   // assign __die to ctrl+c
+    kh_bind_create("^&A", func); // assign __die to ctrl+c
     /*
     kh_bind_create("0", hello);     // assign hello to 0
     kh_bind_create("*", hello);     // assign hellp to *
