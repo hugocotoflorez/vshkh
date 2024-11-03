@@ -12,24 +12,28 @@ Function descriptions and those stuff are written in vshkh.h
 
 ## Binds formatting
 
-### Mods
+### Mods parsing format
 
-- **Normal**: lowerase or some symbols
-- **Shift**: upercase or some symbols
-- **Shift + ctrl**: All ctrl + lowecase is read as ctrl + upercase, but using shift with ctrl chashes
-- **Shift + alt**: & + A-Z or some symbols
-- **Shift + supr**: All symbols that require physical shift
-- **Shift + ctrl + alt**: ^& + A-Z or some symbols
-- **Shift + ctrl + supr**: ^ + All symbols that require physical shift
-- **Shift + alt + supr**: &@ + All symbols that require physical shift
-- **Shift + ctrl + alt +supr** ^&@ + All symbols that require physical shift
-- **ctrl**: Cant be mapped, just shift ctrl
-- **ctrl + alt**: Cant be mapped, just shift ctrl alt
-- **ctrl + supr**: ^@ + lowercase or symbols that dont need shift
-- **ctrl + alt +supr**: ^&@ + lowercase or symbols that dont need shift
-- **alt**: & + lowercase or some symbols
-- **alt + supr**: &@ + lowercase or some symbols
-- **supr**: @ + lowercase or some symbols
+Using 'a' as example char
+
+| Mods | format |
+| :---: | :---: |
+| **Normal** | "a" |
+| **Shift** | "A" |
+| **ctrl** | "^A" |
+| **alt** | "&a" |
+| **Supr** | "@a" |
+| **Shift + ctrl** | Not allowed |
+| **Shift + alt** | "&A" |
+| **Shift + supr** | "@A" |
+| **Shift + ctrl + alt** | "&^A" |
+| **Shift + ctrl + supr** | "^@A" |
+| **Shift + alt + supr** | &@A" |
+| **Shift + ctrl + alt +supr** | "^&@A" |
+| **ctrl + alt** | "^&a" |
+| **ctrl + supr** | "^@a" |
+| **ctrl + alt +supr** | "^&@a" |
+| **alt + supr** | "&@a" |
 
 > [!CAUTION]
 > Ctrl without supr dont allow lowercase chars
