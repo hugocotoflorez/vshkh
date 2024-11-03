@@ -74,6 +74,9 @@ kh_valid_kb(Keybind kb)
     return !kb_is_equal(kb, INVALID_KB);
 }
 
+/* Print a keypress using symbols to represent mods.
+ * This function can be used for debugging or for information,
+ * but should not be used for final purposes */
 void
 kh_repr_kp(Keypress kp)
 {
@@ -112,6 +115,9 @@ kh_repr_kp(Keypress kp)
     putchar('\n');
 }
 
+/* Get a string that can be used to parse an arrow key with modifiers.
+ * As arrows can be represented with a single char it is used # + a-d
+ * or A-D for shift mod. This function does this automatically. */
 char *
 get_arrow_str(Arrowkey arrow, Mods mods, char *str)
 {

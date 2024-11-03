@@ -32,8 +32,9 @@ TODO:
 - CTRL is too limited
 - CTRL + SHIFT + KEY: crah
 - CTRL + 1,9,0 dont exists
+- CTRL + shift + alt is read as supr + C + S + A with lowercase char
 
-- right + left + down at the same time breaks the handler
+- right + left + down at the same time breaks the handler. with -O3 it doesnt happened xd
 
 ## Binds formatting
 

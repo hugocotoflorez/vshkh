@@ -373,10 +373,10 @@ Keybind kh_bind_parse(const char *str);
 typedef enum
 {
     NO_ARROW = 0,
-    ARROW_LEFT,
-    ARROW_RIGHT,
     ARROW_UP,
     ARROW_DOWN,
+    ARROW_RIGHT,
+    ARROW_LEFT,
 } Arrowkey;
 
 /* Return one of the values above.

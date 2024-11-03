@@ -8,22 +8,25 @@
 #include <termios.h>
 #include <unistd.h>
 
-static int       ENABLED = 1;
-static int       STARTED = 0;
-static int       QUIT    = 0;
-static pthread_t main_thread;
+/* Globals that must not be changed manually */
+static int       ENABLED = 1; // set to 0 to pause handler
+static int       STARTED = 0; // control if it is already started
+static int       QUIT    = 0; // set to 1 to exit thread
+static pthread_t main_thread; // thread id
 
-/* Sleep time if nothing read */
-#define STIME 10000
-/* Sleep time if disabled */
-#define STDIS 10000
-/* sleep time while waiting in kh_wait */
-#define TWAIT 10000
-
-#define BUFSIZE 10
-
+/* Terminal flags used to reset it when handler is closed */
 static struct termios origin_termios;
 static int            flags;
+
+/* Sleep time if nothing read */
+#define ST_NRD 10000
+/* Sleep time if disabled */
+#define ST_DIS 10000
+/* sleep time while waiting in kh_wait */
+#define ST_WAIT 10000
+
+/* Buffer size */
+#define BUFSIZE 10
 
 /* SUPR + SHIFT + key mods characters
  * Uper case characters are placed over
@@ -61,6 +64,9 @@ static char supr_shift_lookup[] = {
     [125] = '?', [126] = '?', [127] = '?',
 };
 
+/* Disable all terminal binds and especial behaviour to catch all raw
+ * input. Previous flags and settings are stored in global FLAGS and
+ * ORIGIN_TERMIOS. */
 static void
 __enable_raw_mode()
 {
@@ -74,6 +80,8 @@ __enable_raw_mode()
     fcntl(STDIN_FILENO, F_SETFL, flags | O_NONBLOCK);
 }
 
+/* Return terminal to normal mode. this function HAVE TO BE CALLED AFTER
+ * ENABLING RAW MODE. If not udefined behaviour is get. */
 static void
 __disable_raw_mode()
 {
@@ -88,7 +96,7 @@ __disable_raw_mode()
 /* Take an action: call a function is kp is binded or
  * add it to keypresses buffer */
 /* Todo: allow multiple kp binds */
-void
+static void
 __kp_action(Keypress kp)
 {
     Keybind  kb;
@@ -108,7 +116,7 @@ __kp_action(Keypress kp)
 /* Given a char return the default keypress
  * it only check for single chars (ctrl, shift)
  * other modifier dont call this function (directly) */
-Keypress
+static Keypress
 __get_kp_from_char(char c)
 {
     Keypress kp;
@@ -142,7 +150,7 @@ __get_kp_from_char(char c)
 
 /* Temporal? given a raw read char, assign it to a keypress
  * and take the action related to the keypress */
-void
+static void
 __analize(char c)
 {
     __kp_action(__get_kp_from_char(c));
@@ -150,7 +158,7 @@ __analize(char c)
 
 /* Get default arrow keypress
  * from direction character (A-D) */
-Keypress
+static Keypress
 __get_arrow_kp(char c)
 {
     switch (c)
@@ -187,7 +195,7 @@ __get_arrow_kp(char c)
  * char, so it uses a lookup table that places characters that
  * should be represented if shift is used above the characters
  * that share physical key without shift mod */
-void
+static void
 __supr_get_char(Keypress *kp, int supr_mod, int supr_key)
 {
     switch (supr_mod) /* SUPR MODS */
@@ -208,7 +216,7 @@ __supr_get_char(Keypress *kp, int supr_mod, int supr_key)
 }
 
 /* Get the modifiers given a mod and a key (from a supr like entry). */
-void
+static void
 __supr_get_mods(Keypress *kp, int supr_mod, int supr_key)
 {
     switch (supr_mod) /* SUPR MODS */
@@ -269,7 +277,7 @@ __supr_get_mods(Keypress *kp, int supr_mod, int supr_key)
 
 /* Get the arrow keypress given an extended format of
  * representation stored in buf string, of size n. */
-Keypress
+static Keypress
 __get_arrow(char *buf)
 {
     Keypress kp;
@@ -290,7 +298,7 @@ __get_arrow(char *buf)
  * represents the keypress with the mods. Supr mods and
  * arrows use this representation. This function is not
  * used for arrows. */
-Keypress
+static Keypress
 __get_supr_kp(char *buf)
 {
     Keypress kp;
@@ -310,7 +318,7 @@ __get_supr_kp(char *buf)
  * format starting at ESC, or escape sequences. This function
  * analize the keypresses and do whatever is needed without
  * returning anything */
-void
+static void
 __esc_special(char *buf)
 {
     ssize_t  n;
@@ -392,7 +400,7 @@ __keyboard_handler()
                 case 0:
                     /* If nothing was read, sleep a little to
                      * avoid use too much cpu */
-                    usleep(STIME);
+                    usleep(ST_NRD);
                     break;
 
                 default:              /* Something is read */
@@ -409,7 +417,7 @@ __keyboard_handler()
             }
 
         else // keyboard handled is not enabled
-            usleep(STDIS);
+            usleep(ST_DIS);
     }
 
     /* Disable raw mode at exit */
@@ -421,7 +429,7 @@ __keyboard_handler()
 /* Forcefully kill handler. Thread is not terminated. It is recommended
  * to call kh_end instead. */
 static void
-die()
+__die()
 {
     QUIT = 1;
     /* Althougt the raw mode is disabled once the handler
@@ -486,7 +494,7 @@ kh_toggle()
 void
 kh_end()
 {
-    die();
+    __die();
     pthread_join(main_thread, NULL);
     ENABLED = 1;
     STARTED = 0;
@@ -502,13 +510,13 @@ kh_wait()
     /* This can be a quite lazy approach about
      * how to wait for input. But it works */
     while (!kh_valid_kp(kp = kh_get()))
-        usleep(TWAIT);
+        usleep(ST_WAIT);
     return kp;
 }
 
 /* Ignore buffered keypresses and empty the
  * buffer. Removed keypressed cant be accesed
- * after calling this funcion. */
+ * after calling this funcion. UNTESTED*/
 void
 kh_flush()
 {
