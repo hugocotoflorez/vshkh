@@ -33,3 +33,4 @@ TODO:
 - CTRL + SHIFT + KEY: crah
 - CTRL + 1,9,0 dont exists
 
+- right + left + down at the same time breaks the handler
