@@ -1,4 +1,3 @@
-#define ASCII_TABLE_REPR
 #include "vshkh.h"
 #include <assert.h>
 #include <stdio.h>
@@ -16,6 +15,12 @@ void
 hello()
 {
     printf("Hello\n");
+}
+
+void
+arrow_mod()
+{
+    printf("ARROWWWW\n");
 }
 
 void
@@ -85,9 +90,11 @@ int
 main(void)
 {
     Keypress kp;
+    char     str[10];
     kh_start();
 
-    kh_bind_create("^C", __die);      // assign __die to ctrl+c
+    kh_bind_create("^C", __die); // assign __die to ctrl+c
+    kh_bind_create(get_arrow_str(ARROW_UP, SUPR_MOD| ALT_MOD, str), arrow_mod);
     /*
         kh_bind_create("0", hello);     // assign hello to 0
         kh_bind_create("*", hello);     // assign hellp to *
@@ -107,40 +114,7 @@ main(void)
     while (1)
     {
         kp = kh_wait();
-
-        if (kh_has_supr(kp))
-            printf("SUPR+");
-
-        if (kh_has_ctrl(kp))
-            printf("CTRL+");
-
-        if (kh_has_alt(kp))
-            printf("ALT+");
-
-        if(kh_has_shift(kp))
-            printf("SHIFT+");
-
-        if (kh_is_arrow(kp))
-            switch (kp.c)
-            {
-                case ARROW_UP:
-                    printf("up");
-                    break;
-                case ARROW_DOWN:
-                    printf("down");
-                    break;
-                case ARROW_LEFT:
-                    printf("left");
-                    break;
-                case ARROW_RIGHT:
-                    printf("right");
-                    break;
-            }
-
-        else
-            printf("%s", REPR[(int) kp.c]);
-
-        putchar('\n');
+        kh_repr_kp(kp);
     }
     return 0;
 }

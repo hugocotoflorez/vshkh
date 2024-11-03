@@ -131,6 +131,7 @@ __get_kp_from_char(char c)
         case ')': case '!': case '#': case '$':
         case '%': case '*': case '(': case ':':
         case '{': case '|': case '}': case '~':
+        case '@': case '^': case '&':
             // clang-format on
             kp.mods = SHIFT_MOD;
             break;

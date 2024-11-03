@@ -365,6 +365,7 @@ Keybind kh_bind_parse(const char *str);
         kh_bind_add(__kb__);                   \
     } while (0)
 
+
 /***************************************************
  * ---| Utils (utils.c)                       |--- *
  ***************************************************/
@@ -384,6 +385,11 @@ typedef enum
  * keypress is not an arrow key. */
 Arrowkey kh_is_arrow(Keypress);
 
+/* Return the format string given an arrow and the mods.
+ * The char* argument is a string where the formatted string
+ * would be written. Is the same that the function returns.*/
+char *get_arrow_str(Arrowkey, Mods, char *);
+
 /* Following functions return >0 if keypress has
  * the modifier in the function name pressed or
  * 0 otherwise */
@@ -396,6 +402,9 @@ int kh_valid_kp(Keypress);
 int kb_is_equal(Keybind, Keybind);
 int kp_is_equal(Keypress, Keypress);
 
+/* Print to stdout the representation using special
+ * characters to represent mods (see parsing format) */
+void kh_repr_kp(Keypress);
 
 /***************************************************
  * ---| Array (dynarray.c)                    |--- *

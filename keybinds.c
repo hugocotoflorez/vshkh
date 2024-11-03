@@ -3,6 +3,9 @@
 #include <stdio.h>
 #include <string.h>
 
+/* Just to print a message while creating a bind */
+#define VERBOSE
+
 extern Array kb_array;
 
 /* Add a keybind. If same sequences of keypresses are
@@ -65,6 +68,31 @@ kh_bind_append(Keybind *kb, Keypress kp)
     return *kb;
 }
 
+void
+__get_arrow_by_char(char c, Keypress *kp)
+{
+    switch (c)
+    {
+        case 'A':
+        case 'a':
+            kp->c = ARROW_UP;
+            break;
+        case 'B':
+        case 'b':
+            kp->c = ARROW_DOWN;
+            break;
+        case 'C':
+        case 'c':
+            kp->c = ARROW_RIGHT;
+            break;
+        case 'D':
+        case 'd':
+            kp->c = ARROW_LEFT;
+            break;
+    }
+}
+
+
 /* Arrows are not implemented */
 /* Return a Keybind with the same sequence at
  * str, being str a correct formatted textual
@@ -80,6 +108,10 @@ kh_bind_parse(const char *str)
 
     kb = kh_bind_new();
     kp = (Keypress) { 0 };
+
+#if defined(VERBOSE)
+    printf("Creating keybind:\n");
+#endif
 
     while (*str)
     {
@@ -105,6 +137,10 @@ kh_bind_parse(const char *str)
                 kp.mods |= ALT_MOD;
                 break;
 
+            case '#': // Arrow
+                kp.mods |= IS_ARROW;
+                break;
+
             case '@': // SUPR
                 kp.mods |= SUPR_MOD;
                 /* Disable shift if ctrl had set it, because shift is
@@ -115,15 +151,31 @@ kh_bind_parse(const char *str)
                 // clang-format off
             case 'A' ... 'Z': // Upercase
             case '<': case '_': case '>': case '?': // Chars that uses shift modifier
-            case ')': case '!': case '#': case '$':
+            case ')': case '!': case '~': case '$':
             case '%': case '*': case '(': case ':':
-            case '{': case '|': case '}': case '~': // clang-format on
+            case '{': case '|': case '}': // clang-format on
                 kp.mods |= SHIFT_MOD;
                 goto __add__; // avoid implicit-fallthought
 
             default:
             __add__:
-                kp.c = *str;
+
+                /* If kp is an arrow chars dont represent
+                 * chars but an arrow direction. */
+                if (kp.mods & IS_ARROW)
+                    __get_arrow_by_char(*str, &kp);
+
+                /* If kp is not an arrow the character after
+                 * the mods is literally the character that
+                 * triggers the bind */
+                else
+                    kp.c = *str;
+
+#if defined(VERBOSE)
+                printf("| Add to keybind: ");
+                kh_repr_kp(kp);
+                putchar('\n');
+#endif
                 kh_bind_append(&kb, kp);
                 kp = (Keypress) { 0 };
                 break;

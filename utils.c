@@ -1,4 +1,6 @@
+#define ASCII_TABLE_REPR
 #include "vshkh.h"
+#include <stdio.h>
 
 /* Return one of the values above.
  * Arrowkey can be used as a boolean
@@ -70,4 +72,63 @@ inline int
 kh_valid_kb(Keybind kb)
 {
     return !kb_is_equal(kb, INVALID_KB);
+}
+
+void
+kh_repr_kp(Keypress kp)
+{
+    if (kh_has_supr(kp))
+        printf("❖");
+
+    if (kh_has_ctrl(kp))
+        printf("^");
+
+    if (kh_has_alt(kp))
+        printf("⎇");
+
+    if (kh_has_shift(kp))
+        printf("⇧");
+
+    if (kh_is_arrow(kp))
+        switch (kp.c)
+        {
+            case ARROW_UP:
+                printf("");
+                break;
+            case ARROW_DOWN:
+                printf("");
+                break;
+            case ARROW_LEFT:
+                printf("");
+                break;
+            case ARROW_RIGHT:
+                printf("");
+                break;
+        }
+
+    else
+        printf("%s", REPR[(int) kp.c]);
+
+    putchar('\n');
+}
+
+char *
+get_arrow_str(Arrowkey arrow, Mods mods, char *str)
+{
+    int i = 0;
+    if (mods & CTRL_MOD)
+        str[i++] = '^';
+    if (mods & ALT_MOD)
+        str[i++] = '&';
+    if (mods & SUPR_MOD)
+        str[i++] = '@';
+
+    str[i++] = '#';
+
+    str[i] = 'a' + arrow - 1;
+
+    if (mods & SHIFT_MOD)
+        str[i] -= 'a' - 'A';
+
+    return str;
 }
