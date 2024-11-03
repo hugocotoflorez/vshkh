@@ -1,21 +1,22 @@
-/***************************************************
- * VSHKH                                           *
- ***************************************************
- * Author: Hugo Coto Florez                        *
- *                                                 *
- * Wellcome to Very Simple Hugo's Keyboard Handler *
- * The aim of this proyect is to give an easy to   *
- * use keyboard handler. This proyect is part of   *
- * nhoutpad2.                                      *
- *                                                 *
- * Contact info: hugo.coto@rai.usc.es              *
- * -> github.com/hugocotoflorez(/vshkh)            *
- ***************************************************/
+/*********************************************************
+ * VSHKH                                                 *
+ *********************************************************
+ * Author: Hugo Coto Florez                              *
+ *                                                       *
+ * Wellcome to Very Simple Hugo's Keyboard Handler       *
+ * The aim of this proyect is to give an easy to         *
+ * use keyboard handler. This proyect is part of         *
+ * nhoutpad2.                                            *
+ *                                                       *
+ * Contact info: hugo.coto@rai.usc.es                    *
+ * -> github.com/hugocotoflorez(/vshkh)                  *
+ *********************************************************/
 
 /*********************************************************
  * Function Apendix                                      *
  *********************************************************
  * Arrowkey kh_is_arrow(Keypress);                       *
+ * void     kh_bind_create(char*, BindFunc){MACRO}       *
  * Keybind  kh_bind_parse(const char *str);              *
  * Keybind  kh_bind_append(Keybind *kb, Keypress kp);    *
  * void     kh_bind_set_func(Keybind kb, BindFunc func); *
@@ -35,6 +36,7 @@
  * int      kh_has_shift(Keypress);                      *
  * int      kh_has_alt(Keypress);                        *
  * int      kh_valid_kp(Keypress);                       *
+ * char    *get_arrow_str(Arrowkey, Mods, char *);       *
  *********************************************************/
 
 #if defined(ASCII_TABLE_REPR) && !defined(ASCII_TABLE_REPR_DEFINED)
