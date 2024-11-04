@@ -66,8 +66,5 @@ Using 'a' as example char
 - CTRL is too limited
 - CTRL + SHIFT + KEY: crash
 - CTRL + 1,9,0 dont exists
-- ALT + CTRL set shift
-- ALT + CTRL + SHIFT uset shift
-- ^&A only maps to C+Alt+a, if shift is used dont call func
 - right + left + down at the same time breaks the handler. with -O3 it doesnt happened xd
 
