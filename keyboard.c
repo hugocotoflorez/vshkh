@@ -209,7 +209,6 @@ __supr_get_char(Keypress *kp, int supr_mod, int supr_key)
         case 0xE:  // supr + shift + ctrl
         case 0x10: // supr + shift + ctrl + alt
             kp->c = supr_shift_lookup[supr_key];
-            kp->c = supr_shift_lookup[supr_key];
             break;
 
         default:
