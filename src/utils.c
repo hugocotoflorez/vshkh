@@ -1,5 +1,5 @@
 #define ASCII_TABLE_REPR
-#include "vshkh.h"
+#include "../include/vshkh.h"
 #include <stdio.h>
 
 /* Return one of the values above.

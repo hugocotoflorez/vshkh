@@ -1,4 +1,4 @@
-#include "vshkh.h"
+#include "../include/vshkh.h"
 #include <fcntl.h>
 #include <pthread.h>
 #include <sched.h>
@@ -287,7 +287,11 @@ __get_arrow(char *buf)
     int      supr_mod;
     char     c;
 
-    sscanf(buf, "\x1b[%d;%d%c", &supr_key, &supr_mod, &c);
+    if (buf == NULL)
+        printf("[DEBUG] NULL ENTRY\n");
+
+    else
+        sscanf(buf, "\x1b[%d;%d%c", &supr_key, &supr_mod, &c);
 
     /* Get defaults */
     kp = __get_arrow_kp(c);
@@ -307,7 +311,12 @@ __get_supr_kp(char *buf)
     int      supr_key;
     int      supr_mod;
 
-    sscanf(buf, "\x1b[%d;%du", &supr_key, &supr_mod);
+
+    if (buf == NULL)
+        printf("[DEBUG] NULL ENTRY\n");
+
+    else
+        sscanf(buf, "\x1b[%d;%du", &supr_key, &supr_mod);
 
     __supr_get_mods(&kp, supr_mod, supr_key);
     __supr_get_char(&kp, supr_mod, supr_key);
@@ -325,6 +334,13 @@ __esc_special(char *buf)
 {
     ssize_t  n;
     Keypress kp;
+
+
+    if (buf == NULL)
+    {
+        printf("[DEBUG] NULL ENTRY\n");
+        return;
+    }
 
     /* Get the remaining of the keypress and store it in
      * buf as if all was read together. Given the bytes read
