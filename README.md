@@ -13,8 +13,6 @@ Description should be written here.
 - *S* as in "sit"
 - *K* as in "kick"
 
-Say it like: **"Vesk"** (vesk)
-
 ## User Interface
 
 ### Basic usage
@@ -60,10 +58,10 @@ Using 'a' as example char
 | **Shift + ctrl + alt** | "&^A" |
 | **Shift + ctrl + supr** | "^@A" |
 | **Shift + alt + supr** | &@A" |
-| **Shift + ctrl + alt +supr** | "^&@A" |
+| **Shift + ctrl + alt + supr** | "^&@A" |
 | **ctrl + alt** | "^&a" |
 | **ctrl + supr** | "^@a" |
-| **ctrl + alt +supr** | "^&@a" |
+| **ctrl + alt + supr** | "^&@a" |
 | **alt + supr** | "&@a" |
 
 | Arrow | format |
@@ -73,7 +71,7 @@ Using 'a' as example char
 | **LEFT** | "#c" |
 | **RIGHT** | "#d" |
 | **Shift + up** | "#A" |
-| **Shift + ctrl + alt +supr** | "^&@#A" |
+| **Shift + ctrl + alt + supr up** | "^&@#A" |
 
 > [!CAUTION]
 > Ctrl without supr dont allow lowercase chars
