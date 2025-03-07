@@ -7,11 +7,12 @@ Very Simple Hugo's Keyboard Handler
 Description should be written here.
 
 ### Pronunciation
-"Vesk" is pronounced as /vɛsk/, which rhymes with "desk" and "pesk."
+"vshkh" is pronounced as /vɛsk/, which rhymes with "desk" and "pesk."
 - *V* as in "van"
 - *E* as in "bet"
 - *S* as in "sit"
 - *K* as in "kick"
+
 Say it like: **"Vesk"** (vesk)
 
 ## User Interface
