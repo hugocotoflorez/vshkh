@@ -204,7 +204,7 @@ array_destroy()
         pthread_mutex_unlock(&mutex);
 }
 
-/* Return the number of kb with
+/*** Return the number of kb with
  * whe same prefix */
 int
 array_prefix_get(Keybind prefix)

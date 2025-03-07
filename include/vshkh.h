@@ -11,35 +11,6 @@
  * -> github.com/hugocotoflorez(/vshkh)                  *
  *********************************************************/
 
-/*********************************************************
- * Function Apendix                                      *
- *********************************************************
- * Arrowkey kh_is_arrow(Keypress);                       *
- * void     kh_bind_create(char*, BindFunc){MACRO}       *
- * Keybind  kh_bind_parse(const char *str);              *
- * Keybind  kh_bind_append(Keybind *kb, Keypress kp);    *
- * void     kh_bind_set_func(Keybind kb, BindFunc func); *
- * Keybind  kh_bind_new();                               *
- * BindFunc kh_bind_get(Keybind kb);                     *
- * void     kh_bind_remove(Keybind);                     *
- * void     kh_bind_add(Keybind);                        *
- * int      kh_valid_kb(Keybind);                        *
- * void     kh_flush();                                  *
- * Keypress kh_wait();                                   *
- * Keypress kh_get();                                    *
- * void     kh_end();                                    *
- * void     kh_pause();                                  *
- * void     kh_start();                                  *
- * void     kh_toggle();                                 *
- * void     kh_set_coocked();                            *
- * void     kh_set_raw();                                *
- * int      kh_has_ctrl(Keypress);                       *
- * int      kh_has_shift(Keypress);                      *
- * int      kh_has_alt(Keypress);                        *
- * int      kh_valid_kp(Keypress);                       *
- * char    *get_arrow_str(Arrowkey, Mods, char *);       *
- *********************************************************/
-
 #if defined(ASCII_TABLE_REPR) && !defined(ASCII_TABLE_REPR_DEFINED)
 #define ASCII_TABLE_REPR_DEFINED
 
@@ -200,10 +171,6 @@ static const char *DESC[] = {
 #ifndef VSHKH_H
 #define VSHKH_H
 
-/* hsll extension: add a string as if it was read
- * from keyboard */
-void __kh_sudo_append(char *str);
-
 /***************************************************
  * ---| MISC                                  |--- *
  ***************************************************/
@@ -238,114 +205,8 @@ typedef struct {
                 .c = 0, .mods = IS_INVALID, \
         }
 
-/***************************************************
- * ---| VSHKH interface (keyboard.c)          |--- *
- ***************************************************/
-
-/* The keyboard handler would be initialized in
- * a different thread, so this funcion returns
- * once it is created. This function also wake up
- * the handler if paused. */
-void kh_start();
-
-/* Pause the handler, the input would be read
- * once it starts again */
-void kh_pause();
-
-/* Toggle the handler status, the input would be read
- * once it starts again. kh_pause pauses the handler and
- * kh_start starts the handler, both functions can be called
- * more than once without breaking the program (i hope). */
-void kh_toggle();
-
-/* Active coocked mode and use escape sequences and mods as
- * keybind options and modifiers */
-void kh_set_coocked();
-
-/* Disable coocked mode and thread all read chars as raw chars */
-void kh_set_raw();
-
-/* Close the handler and restore all values
- * to default */
-void kh_end();
-
-/* Get a keypress that is waiting in buffer and
- * remove it from buffer. If no keypress is in
- * buffer it return a keypress that return 0
- * if passed to kh_valid_kp. */
-Keypress kh_get();
-
-/* Wait for keyboard input and return the first
- * keypress */
-Keypress kh_wait();
-
-/* Ignore buffered keypresses and empty the
- * buffer. Removed keypressed cant be accesed
- * after calling this funcion. */
-void kh_flush();
-
-
-/***************************************************
- * ---| Keybinds (keybinds.c)                 |--- *
- ***************************************************/
-
-/* The keyboard handler can also execute a
- * void(*foo)(void) function if set to a key
- * or sequence of keys. Funtions below are
- * used to set or delete keybinds. */
-
-/* Function prototype */
-typedef void (*BindFunc)(void);
-
-/* Max number of keypresses that can be stored
- * in a single keybind */
-#define KEYBINDLEN 2
-
-/* A keybind is a sequence of keypresses.
- * The keypresses should be at least 1, and
- * less or equal than KEYBINDLEN. KP is an
- * array of keypresses, NULL terminated. */
-typedef struct {
-        Keypress kp[KEYBINDLEN + 1]; // all keypresses have to be valid
-        BindFunc func; // function that is going to be executed
-} Keybind;
-
-#define INVALID_KB (Keybind){ 0 }
-
-/* return >0 if keybind is valid or 0 otherwise */
-int kh_valid_kb(Keybind);
-
-/* Add a keybind. If same sequences of keypresses are
- * yet stored, it only modified func. Note
- * that previous one would be overwritten. */
-void kh_bind_add(Keybind);
-
-/* Remove a keybind if exists */
-void kh_bind_remove(Keybind);
-
-/* Get the function from keybind that share KB
- * keypresses or NULL if not found */
-BindFunc kh_bind_get(Keybind kb);
-
-/* Initialize an empty keybind */
-Keybind kh_bind_new();
-
-/* Set the func to a keybind. This call dont
- * modify yet stored keybinds, so it is needed
- * to be called BEFORE add */
-void kh_bind_set_func(Keybind *kb, BindFunc func);
-
-/* Append a keypress to the keybind */
-Keybind kh_bind_append(Keybind *kb, Keypress kp);
-
-
-/* Return a Keybind with the same sequence at
- * str, being str a correct formatted textual
- * keybind. If some error happened return an
- * invalid Keybind. It can be tested using
- * kh_valid_kb(Keybind).
- * See STR Keybind format before. */
-Keybind kh_bind_parse(const char *str);
+#include "keybinds.h"
+#include "keyboard.h"
 
 /******************************************************
  * ---| STR Keybind format                       |--- *
@@ -423,121 +284,10 @@ int kb_len(Keybind kb);
  * characters to represent mods (see parsing format) */
 void kh_repr_kp(Keypress);
 
+/* Get the representation form of KB and store it in S */
+char *kb_repr(Keybind kb, char *s);
 
-/***************************************************
- * ---| Array (dynarray.c)                    |--- *
- ***************************************************/
-
-/* Dynamic array for store keybinds. DATA array entries
- * can be both valid or invalid keybinds. Invalid keybinds
- * could be overwritten. If array is full, it would increment
- * by ARRINC. */
-
-/* Current implementation is thread-safe */
-
-typedef struct {
-        int length; /* Number of elements in buffer. */
-        int alloc_size; /* Size of data, max number of elements
-                         * that can be stored in data without
-                         * overflow */
-        Keybind *data; /* Elements in the buffer */
-} Array;
-
-/* Array grow as
- * new size = old size + ARRINC */
-#define BUFINC 4
-
-/* As this array is not going to be used more than
- * once, Im going to use kp_array as the
- * buffer on which every function call applied. */
-extern Array kb_array;
-
-/* Initialize the array*/
-void array_new();
-
-/* Add a keybind to the buffer and
- * return added keybind. */
-Keybind array_add(Keybind kb);
-
-/* Remove an keybind from the array
- * and return it */
-Keybind array_pop(Keybind);
-
-/* Get the function if keyfind is found or NULL.
- * It is posible to call it as array_exec(kb)(); */
-BindFunc array_exec(Keybind);
-
-/* Return 0 if keybind is not in array, otherwise true value */
-int array_exist(Keybind kb);
-
-/* Modify keybind data with the new Keybind values */
-void array_modify(Keybind kb);
-
-/* Destroy the buffer, all data
- * in the buffer are lost */
-void array_destroy();
-
-
-/***************************************************
- * ---| Buffer (buffer.c)                     |--- *
- ***************************************************/
-
-/* As mentioned above, I share this info to allow
- * user modify and customize the behaviour of the
- * handler.
- * BUT if nothing is changed here all would work as
- * expected, so please dont touch anything if you are
- * not sure about what are you doing. Thanks. */
-
-/* Buffer is a circular buffer of dynamic size.
- * It aims to be easy to use and flexible, as well
- * as fast.
- * As this implementation is done to store keypresses
- * the types and other stuff are based on author
- * knowledge about future usage. */
-
-/* Current implementation is thread-safe */
-
-typedef struct {
-        int length; /* Number of elements in buffer. */
-        Keypress *data; /* Elements in the buffer */
-        Keypress *out_ptr; /* Pointer to next element that have
-                            * to be processed */
-        Keypress *in_ptr; /* Pointer to the next position
-                           * where a new element have to
-                           * be stored */
-} Buffer;
-
-/* As this buffer is not going to be used more than
- * once Im going to use kp_buffer as the
- * buffer on which every function call applied. */
-extern Buffer kp_buf;
-
-/* If this is defined it grow the buffer if new element cant
- * be added. Otherwise a error would be returned */
-#define FIX_OVERFLOW 1
-
-/* Initialize the buffer */
-void buffer_new(int);
-
-/* Add a keypress to the buffer and
- * return added keypress. */
-Keypress buffer_add(Keypress);
-
-/* Remove an element from the buffer
- * and return it. If no elements found,
- * it returns INVALID_KP. */
-Keypress buffer_pop();
-
-/* Get the top of the buffer */
-Keypress buffer_top();
-
-/* Change buffer size. SIZE must be bigger than
- * previous size. */
-int buffer_chsize(int);
-
-/* Destroy the buffer, all data
- * in the buffer are lost */
-void buffer_destroy();
+#include "array.h"
+#include "buffer.h"
 
 #endif

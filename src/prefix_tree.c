@@ -2,6 +2,15 @@
 #include <stdlib.h>
 #include <string.h>
 
+/* Prefix Tree
+ *
+ * Author: Hugo Coto Florez
+ * Github: https://github.com/hugocotoflorez
+ *
+ * About: "Generic" prefix tree implementation.
+ * Designed to be used in vshkh to manage
+ * multi-keypress aliases. */
+
 /* Get num of branches given the level */
 static inline int
 get_branches(int level)
@@ -74,6 +83,7 @@ PT_add(PT_node *base, PT_data data, const char *key, PT_hash hash_func)
 
         if (key[base->level] == '\0') {
                 if (base->valid == 0) {
+                        base->valid = 1;
                         base->data = data;
                         base->key = strdup(key);
                         return;
