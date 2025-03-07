@@ -155,8 +155,7 @@ array_add(Keybind kb)
         if (cell)
                 ret = __insert(cell, kb);
 
-        else
-        {
+        else {
                 __grow();
                 ret = __array_add_unsafe(kb);
         }

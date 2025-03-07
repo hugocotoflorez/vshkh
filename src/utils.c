@@ -75,8 +75,7 @@ kb_is_equal(Keybind kb1, Keybind kb2)
         if (len != kb_len(kb2))
                 return 0;
 
-        for (int i = 0; i < len; i++)
-        {
+        for (int i = 0; i < len; i++) {
                 if (!kp_is_equal(kb1.kp[i], kb2.kp[i]))
                         return 0;
         }
@@ -116,8 +115,7 @@ kh_repr_kp(Keypress kp)
                 printf("⇧");
 
         if (kh_is_arrow(kp))
-                switch (kp.c)
-                {
+                switch (kp.c) {
                 case ARROW_UP:
                         printf("");
                         break;

@@ -212,8 +212,7 @@ void __kh_sudo_append(char *str);
  * but due to Author's metodology it is shared
  * to allow custom implementations.
  * See kh_has_ctrl and related. */
-typedef enum
-{
+typedef enum {
         NO_MOD = 0,
         CTRL_MOD = 1 << 1,
         SHIFT_MOD = 1 << 2,
@@ -228,8 +227,7 @@ typedef enum
  * letter and shift mod is set.
  * If Keypress is typecasted to char it store the char
  * inside Keypress */
-typedef struct
-{
+typedef struct {
         char c;
         Mods mods;
 } Keypress;
@@ -307,8 +305,7 @@ typedef void (*BindFunc)(void);
  * The keypresses should be at least 1, and
  * less or equal than KEYBINDLEN. KP is an
  * array of keypresses, NULL terminated. */
-typedef struct
-{
+typedef struct {
         Keypress kp[KEYBINDLEN + 1]; // all keypresses have to be valid
         BindFunc func; // function that is going to be executed
 } Keybind;
@@ -375,8 +372,7 @@ Keybind kh_bind_parse(const char *str);
  * bind without write a lot. It is only a wrapper for
  * previos declared functions */
 #define kh_bind_create(str, action)                    \
-        do                                             \
-        {                                              \
+        do {                                           \
                 Keybind __kb__ = kh_bind_parse((str)); \
                 kh_bind_set_func(&__kb__, (action));   \
                 kh_bind_add(__kb__);                   \
@@ -387,8 +383,7 @@ Keybind kh_bind_parse(const char *str);
  * ---| Utils (utils.c)                       |--- *
  ***************************************************/
 
-typedef enum
-{
+typedef enum {
         NO_ARROW = 0,
         ARROW_UP,
         ARROW_DOWN,
@@ -440,8 +435,7 @@ void kh_repr_kp(Keypress);
 
 /* Current implementation is thread-safe */
 
-typedef struct
-{
+typedef struct {
         int length; /* Number of elements in buffer. */
         int alloc_size; /* Size of data, max number of elements
                          * that can be stored in data without
@@ -504,8 +498,7 @@ void array_destroy();
 
 /* Current implementation is thread-safe */
 
-typedef struct
-{
+typedef struct {
         int length; /* Number of elements in buffer. */
         Keypress *data; /* Elements in the buffer */
         Keypress *out_ptr; /* Pointer to next element that have
