@@ -57,6 +57,15 @@ Using 'a' as example char
 | **ctrl + alt +supr** | "^&@a" |
 | **alt + supr** | "&@a" |
 
+| Arrow | format |
+| :---: | :---: |
+| **UP** | "#a" |
+| **DOWN** | "#b" |
+| **LEFT** | "#c" |
+| **RIGHT** | "#d" |
+| **Shift + up** | "#A" |
+| **Shift + ctrl + alt +supr** | "^&@#A" |
+
 > [!CAUTION]
 > Ctrl without supr dont allow lowercase chars
 
